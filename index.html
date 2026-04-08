@@ -360,50 +360,6 @@ function canAnswer(step, ans) {
   return ans !== undefined;
 }
 
-// ─── APIKEY SCREEN COMPONENT ─────────────────────────────────────────────────
-
-function ApiKeyScreen({ onConfirm, onSkip }) {
-  const [inputKey, setInputKey] = React.useState("");
-  return (
-    <div style={{ maxWidth: 420, margin: "0 auto", fontFamily: "Georgia, serif", background: "#FBF7F4", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={{ flex: 1, padding: "60px 24px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontSize: 40, marginBottom: 20 }}>🔑</div>
-        <div style={{ fontSize: 11, letterSpacing: 3, color: "#8B6355", textTransform: "uppercase", marginBottom: 12 }}>Accès au coach IA</div>
-        <h1 style={{ fontSize: 26, fontWeight: 400, color: "#1A0F0A", margin: "0 0 16px", lineHeight: 1.3 }}>Entre ta clé API Anthropic</h1>
-        <p style={{ fontSize: 14, color: "#8B6355", lineHeight: 1.85, margin: "0 0 24px" }}>
-          Elle active le coach IA personnalisé et les analyses après chaque exercice. Gratuite sur console.anthropic.com
-        </p>
-        <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC", marginBottom: 14 }}>
-          <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Ta clé API</div>
-          <input
-            type="password"
-            placeholder="sk-ant-..."
-            value={inputKey}
-            onChange={e => setInputKey(e.target.value)}
-            style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1px solid #E8D5CC", fontSize: 14, fontFamily: "Georgia, serif", outline: "none", color: "#1A0F0A", background: "#FBF7F4", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ background: "#EFF5F2", borderRadius: 12, padding: "14px 18px" }}>
-          <p style={{ fontSize: 12, color: "#5A8070", lineHeight: 1.7, margin: 0 }}>
-            🔒 Ta clé reste uniquement sur ton appareil. Elle n'est jamais envoyée ni sauvegardée ailleurs.
-          </p>
-        </div>
-      </div>
-      <div style={{ padding: "0 24px 52px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <button
-          onClick={() => { if (inputKey.trim()) onConfirm(inputKey.trim()); }}
-          disabled={!inputKey.trim()}
-          style={{ width: "100%", padding: 18, borderRadius: 14, fontSize: 15, fontFamily: "Georgia, serif", cursor: inputKey.trim() ? "pointer" : "default", border: "none", background: inputKey.trim() ? "#1A0F0A" : "#E8D5CC", color: inputKey.trim() ? "#FBF7F4" : "#A09090" }}
-        >Activer le coach IA →</button>
-        <button
-          onClick={onSkip}
-          style={{ width: "100%", padding: 18, borderRadius: 14, fontSize: 15, fontFamily: "Georgia, serif", cursor: "pointer", background: "transparent", border: "1px solid #E8D5CC", color: "#8B6355" }}
-        >Continuer sans coach IA</button>
-      </div>
-    </div>
-  );
-}
-
 // ─── STYLES ──────────────────────────────────────────────────────────────────
 
 const PAGE = {
@@ -427,8 +383,7 @@ const BTN_GHOST = {
 // ─── APP ─────────────────────────────────────────────────────────────────────
 
 function App() {
-  const [apiKey, setApiKey]         = useState("");
-  const [screen, setScreen]       = useState("apikey");
+  const [screen, setScreen]       = useState("onboarding");
   const [dStep, setDStep]         = useState(0);
   const [dAns, setDAns]           = useState({});
   const [results, setResults]     = useState(null);
@@ -588,15 +543,6 @@ function App() {
   };
 
   // ─── CLÉ API ─────────────────────────────────────────────────────────────
-
-  if (screen === "apikey") {
-    return (
-      <ApiKeyScreen
-        onConfirm={(k) => { setApiKey(k); setScreen("onboarding"); }}
-        onSkip={() => { setApiKey(""); setScreen("onboarding"); }}
-      />
-    );
-  }
 
   // ─── ONBOARDING ──────────────────────────────────────────────────────────
 
