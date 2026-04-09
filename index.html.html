@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Retrouve l'Amour</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --coral: #E8705A;
+      --coral-dark: #C4574A;
+      --coral-light: #FFF0EB;
+      --cream: #F5EDE6;
+      --cream-dark: #EDD5CC;
+      --dark: #1A1A1A;
+      --mid: #8B7060;
+      --light: #F0E0D8;
+      --white: #FFFFFF;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Lato', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--cream); font-family: var(--font-body); }
+    #root { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; }
+    input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; border-radius: 99px; background: var(--cream-dark); outline: none; cursor: pointer; width: 100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--coral); cursor: pointer; box-shadow: 0 2px 8px rgba(232,112,90,0.4); }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--coral); cursor: pointer; border: none; }
+    button { font-family: var(--font-body); transition: all 0.2s ease; }
+    button:active { transform: scale(0.97); }
+    textarea, input { font-family: var(--font-body); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up-1 { animation: fadeUp 0.5s 0.1s ease both; }
+    .fade-up-2 { animation: fadeUp 0.5s 0.2s ease both; }
+    .fade-up-3 { animation: fadeUp 0.5s 0.3s ease both; }
+    .fade-up-4 { animation: fadeUp 0.5s 0.4s ease both; }
+    .dot-pulse span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); margin: 0 3px; }
+    .dot-pulse span:nth-child(1) { animation: pulse 1.2s 0s ease-in-out infinite; }
+    .dot-pulse span:nth-child(2) { animation: pulse 1.2s 0.2s ease-in-out infinite; }
+    .dot-pulse span:nth-child(3) { animation: pulse 1.2s 0.4s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+
+// ─── DONNÉES ─────────────────────────────────────────────────────────────────
+
+const DIAG = [
+  { id:0, sec:"A", type:"qcm", q:"Comment s'est terminée ta dernière relation importante ?",
+    opts:["Elle·il m'a quitté(e)","Je l'ai quitté(e)","Rupture mutuelle progressive","Trahison ou infidélité","Relation toxique ou abusive"] },
+  { id:1, sec:"A", type:"qcm", q:"Il y a combien de temps ?",
+    opts:["Moins de 3 mois","3 à 6 mois","6 mois à 1 an","Plus d'un an"] },
+  { id:2, sec:"A", type:"scale", q:"Sur cette échelle, où se situe ta douleur aujourd'hui ?", minL:"Je vais bien", maxL:"Douleur intense" },
+  { id:3, sec:"A", type:"qcm", q:"Aujourd'hui, tu penses encore à cette personne…",
+    opts:["Constamment — plusieurs fois par heure","Souvent — plusieurs fois par jour","Parfois — ça va et vient","Rarement — je passe à autre chose"] },
+  { id:4, sec:"A", type:"multi", max:3, q:"Cette relation t'a fait douter de… (jusqu'à 3)",
+    opts:["Ta valeur en tant que partenaire","Ta capacité à bien aimer","Ton jugement et ton intuition","Ta normalité émotionnelle","Rien — c'est l'autre le problème"] },
+  { id:5, sec:"A", type:"qcm", q:"As-tu l'impression de revivre quelque chose de déjà vécu ?",
+    opts:["Oui clairement — c'est un schéma","Peut-être, j'y pense","Non, c'était vraiment unique","Je ne sais pas encore"] },
+  { id:6, sec:"B", type:"qcm", q:"Quand quelqu'un que tu aimes ne répond pas pendant des heures, tu…",
+    opts:["Commence à t'inquiéter et rejoues la conversation","T'en fiches — chacun a sa vie","Attends sereinement sans te faire de film","Oscilles entre indifférence et panique"] },
+  { id:7, sec:"B", type:"qcm", q:"Dans une relation, ce qui est le plus dur pour toi c'est…",
+    opts:["Ne pas être sûr(e) d'être aimé(e) en retour","Quand l'autre veut trop de proximité","Rien de particulier — je m'adapte bien","Alterner entre les deux selon les jours"] },
+  { id:8, sec:"B", type:"scenario", q:"Tu passes une soirée parfaite avec quelqu'un que tu commences à aimer. En rentrant, tu ressens…",
+    opts:["De l'anxiété — et si ce n'était pas réciproque ?","Un léger recul — tu as besoin de ton espace","De la joie simple — c'était bien, point","De la confusion — trop d'émotions mélangées"] },
+  { id:9, sec:"B", type:"qcm", q:"Face à un conflit avec quelqu'un que tu aimes, ta première réaction est…",
+    opts:["M'accrocher et vouloir régler ça tout de suite","Prendre de la distance et me taire","En parler calmement quand le moment est bon","Exploser, puis me retirer complètement"] },
+  { id:10, sec:"B", type:"scale", q:"À quel point fais-tu confiance aux gens naturellement ?", minL:"Pas du tout", maxL:"Très facilement" },
+  { id:11, sec:"B", type:"qcm", q:"Ce qui te fait le plus peur en amour…",
+    opts:["Être abandonné(e) ou pas assez aimé(e)","Perdre ma liberté ou être étouffé(e)","Pas grand-chose — l'amour c'est beau","Les deux à la fois — c'est le paradoxe"] },
+];
+
+const ATTACH = {
+  anxieux: {
+    label: "Attachement anxieux", emoji: "🌊", color: "#E8705A", bg: "#FFF0EB",
+    desc: "Tu aimes intensément et tu as peur de perdre. Tu surveilles les signaux de l'autre à la loupe — parfois au détriment de toi-même. Cette sensibilité est aussi l'une de tes plus grandes forces."
+  },
+  evitant: {
+    label: "Attachement évitant", emoji: "🏔️", color: "#C4574A", bg: "#FDF0EC",
+    desc: "Tu te protèges en gardant de la distance. L'intimité te met mal à l'aise sans que tu saches toujours pourquoi. Ta prochaine étape : apprendre à laisser entrer sans te perdre."
+  },
+  secure: {
+    label: "Attachement sécure", emoji: "⚓", color: "#D4574A", bg: "#FDF0EC",
+    desc: "Tu as une base stable. La relation difficile que tu traverses ne remet pas en cause ta capacité à aimer. Tu as toutes les ressources — il faut juste du temps."
+  },
+  desorganise: {
+    label: "Attachement désorganisé", emoji: "🌀", color: "#C4574A", bg: "#FFF0EB",
+    desc: "Tu veux l'amour et tu en as peur en même temps. C'est souvent lié à des expériences anciennes. Ce que tu traverses est réel — et avec le bon chemin, ça peut vraiment transformer ta vie."
+  },
+  saimer: [
+    {
+      id: "s1", title: "Ta voix intérieure",
+      intro: "Nous avons tous une voix dans la tête qui commente, juge, doute. Cet exercice inspiré de la Thérapie d'Acceptation et d'Engagement (ACT) t'aide à identifier cette voix — et à choisir de ne plus la laisser diriger ta vie.",
+      steps: [
+        { type: "coach", text: "Ferme les yeux un instant. Écoute ce que ta voix intérieure te dit en ce moment sur toi-même. Sans la juger — juste l'observer." },
+        { type: "textarea", q: "Quels sont les 3 messages les plus récurrents que cette voix te répète sur toi ? ("Tu n'es pas assez...", "Tu aurais dû...", "Tu ne mérites pas...")" },
+        { type: "choice", q: "Cette voix intérieure ressemble le plus à…", opts: ["Un critique sévère qui ne te fait jamais confiance", "Un juge qui comptabilise toutes tes erreurs", "Un protecteur anxieux qui anticipe le pire", "Un perfectionniste qui ne te laisse jamais tranquille"] },
+        { type: "textarea", q: "Si cette voix était une personne, que lui dirais-tu ? Parle-lui directement." },
+        { type: "textarea", q: "Maintenant, imagine une voix qui t'aimerait inconditionnellement. Qu'est-ce qu'elle te dirait sur toi, là, maintenant ?" },
+        { type: "coach", text: "Tu ne es pas cette voix. Tu es celui ou celle qui l'entend. Et tu peux choisir à laquelle tu obéis." },
+      ]
+    },
+    {
+      id: "s2", title: "L'amour de soi au quotidien",
+      intro: "L'amour de soi n'est pas un sentiment — c'est une pratique. Inspiré des travaux de Brené Brown sur la vulnérabilité et la valeur personnelle : on ne trouve pas l'amour de soi, on le construit chaque jour par des actes concrets.",
+      steps: [
+        { type: "coach", text: "L'amour de soi se voit dans les petites décisions quotidiennes. Pas dans les grandes déclarations." },
+        { type: "choice", q: "Quand tu as un besoin (repos, aide, espace, soutien), tu…", opts: ["L'ignores et continues comme si de rien n'était", "L'exprimes difficilement, avec culpabilité", "Attends que l'autre devine sans demander", "Le reconnais et le poses clairement"] },
+        { type: "textarea", q: "Qu'est-ce que tu t'interdis de faire pour toi par peur du regard des autres ou par culpabilité ?" },
+        { type: "multicheck", max: 4, q: "Les actes d'amour envers toi que tu vas t'engager à pratiquer :", opts: ["Dire non sans m'excuser", "Me reposer sans me sentir paresseux·se", "Demander de l'aide sans honte", "Me nourrir bien, dormir assez", "M'offrir du temps seul·e sans justification", "Célébrer mes réussites, même petites", "Arrêter de comparer ma vie à celle des autres", "M'habiller pour moi, pas pour les autres", "Poser des limites claires avec ceux qui me vident", "Prendre du plaisir sans le mériter"] },
+        { type: "textarea", q: "Quel est l'acte d'amour envers toi-même que tu repousses depuis trop longtemps ? Qu'est-ce qui t'en empêche vraiment ?" },
+        { type: "coach", text: "S'aimer, c'est se traiter avec la même gentillesse qu'on offrirait à quelqu'un qu'on chérit." },
+      ]
+    },
+    {
+      id: "s3", title: "La joie sans condition",
+      intro: "Inspiré de "L'homme qui voulait être heureux" de Laurent Gounelle et de la psychologie positive : la joie n'attend pas les circonstances idéales. Elle se choisit — et elle se cultive. Cet exercice est le plus important de tout le parcours.",
+      steps: [
+        { type: "coach", text: "La joie de vivre ne vient pas de l'extérieur. Elle ne viendra pas d'une relation, d'un succès ou d'une validation. Elle est déjà en toi — enfouie sous les couches de ce que tu as traversé." },
+        { type: "textarea", q: "Qu'est-ce qui te faisait ressentir de la joie pure avant — avant cette relation, avant ces épreuves ? Des petites choses, des grandes..." },
+        { type: "textarea", q: "En ce moment, qu'est-ce qui, même légèrement, te fait te sentir vivant·e ?" },
+        { type: "choice", q: "Ta relation à la solitude aujourd'hui, c'est…", opts: ["Un vide qui me pèse — j'ai du mal à être seul·e", "Un repos bienvenu — j'apprends à l'apprécier", "Un espace de liberté que je commence à aimer", "Ma fondation — je me retrouve quand je suis seul·e"] },
+        { type: "textarea", q: "Si tu savais que personne ne te juge, que tu ne risques rien — qu'est-ce que tu ferais pour toi dès demain ?" },
+        { type: "coach", text: "Tu n'as pas besoin de quelqu'un pour commencer à vivre pleinement. Tu as juste besoin de toi." },
+        { type: "textarea", q: "Écris ta propre définition de la joie. Pas celle des livres ou des réseaux sociaux. La tienne." },
+      ]
+    },
+  ],
+};
+
+const PHASES = [
+  { id: "comprendre", emoji: "🌱", title: "Comprendre", color: "#C4574A", bg: "#FDF0EC", sub: "Voir clairement ce qui s'est passé" },
+  { id: "guerir",     emoji: "🌿", title: "Guérir",     color: "#E8705A", bg: "#FFF0EB", sub: "Reprendre sa place et sa force" },
+  { id: "construire", emoji: "🌸", title: "Construire", color: "#D4574A", bg: "#FDF0EC", sub: "Accueillir une vraie relation" },
+  { id: "saimer",     emoji: "✦",  title: "S'aimer",    color: "#1A1A1A", bg: "#F5EDE6", sub: "La fondation de tout le reste" },
+];
+
+const EXOS = {
+  comprendre: [
+    {
+      id: "c1", title: "La ligne du temps de tes relations",
+      intro: "Chaque relation laisse une empreinte. Cet exercice t'aide à voir les fils invisibles qui relient tes histoires d'amour — et à comprendre ce que tu répètes sans le vouloir.",
+      steps: [
+        { type: "coach", text: "Pense à tes 3 dernières relations importantes. Pas besoin d'aller loin dans les détails — juste les ressentir." },
+        { type: "textarea", q: "Dans chaque relation, comment te sentais-tu au fond ? (en sécurité, anxieux·se, libre, étouffé·e, vivant·e, effacé·e...)" },
+        { type: "textarea", q: "Y a-t-il un type de personne que tu choisis souvent ? Décris ce profil honnêtement." },
+        { type: "choice", q: "Ce schéma relationnel, d'où vient-il selon toi ?", opts: ["De ma relation avec mes parents","D'une blessure ancienne non guérie","D'une croyance sur ce que je mérite","Je ne sais pas encore"] },
+        { type: "textarea", q: "Qu'est-ce que cette ligne du temps te révèle sur toi ?" },
+      ]
+    },
+    {
+      id: "c2", title: "L'inventaire de tes croyances sur l'amour",
+      intro: "Nos croyances sur l'amour se forment tôt — souvent avant qu'on sache qu'elles existent. Cet exercice s'inspire du travail de Byron Katie : questionner ce qu'on croit vrai.",
+      steps: [
+        { type: "coach", text: "Lis chaque affirmation. Réponds vite, sans réfléchir. C'est ta première réaction qui compte." },
+        { type: "belief", q: ""Je dois mériter d'être aimé·e."", opts: ["Vrai, je le ressens","Parfois vrai","Faux, je sais que j'ai de la valeur","Je ne sais pas"] },
+        { type: "belief", q: ""Si quelqu'un me quitte, c'est que je ne suis pas assez bien."", opts: ["Vrai, je le ressens","Parfois vrai","Faux, les ruptures sont complexes","Je ne sais pas"] },
+        { type: "belief", q: ""L'amour fait toujours souffrir."", opts: ["Vrai, c'est mon expérience","Parfois vrai","Faux, l'amour peut être léger","Je ne sais pas"] },
+        { type: "belief", q: ""Je finis toujours seul·e."", opts: ["Vrai, je le crains profondément","Parfois vrai","Faux, j'ai confiance","Je ne sais pas"] },
+        { type: "textarea", q: "Quelle est LA croyance que tu portes sur l'amour et qui te pèse le plus ? Écris-la ici." },
+        { type: "textarea", q: "Maintenant, est-ce que tu peux imaginer un monde où cette croyance n'est pas vraie ? Qu'est-ce qui changerait pour toi ?" },
+      ]
+    },
+    {
+      id: "c3", title: "La carte de tes valeurs",
+      intro: "Quand une relation se termine, c'est souvent parce que des valeurs fondamentales ont été trahies. Identifier tes valeurs, c'est comprendre ce qui te tient vraiment à cœur.",
+      steps: [
+        { type: "coach", text: "Les valeurs ne sont pas des qualités qu'on admire chez les autres. Ce sont les choses sans lesquelles tu ne peux pas être toi-même." },
+        { type: "multicheck", max: 5, q: "Choisis tes 5 valeurs les plus essentielles :", opts: ["Liberté","Sécurité","Authenticité","Loyauté","Croissance","Tendresse","Indépendance","Profondeur","Humour","Respect","Passion","Stabilité","Créativité","Courage","Paix intérieure","Aventure"] },
+        { type: "textarea", q: "Dans ta dernière relation, laquelle de ces valeurs était régulièrement bafouée ?" },
+        { type: "choice", q: "En te retournant, tu réalises que tu as accepté cette trahison de tes valeurs parce que…", opts: ["J'avais peur de perdre l'autre","Je pensais que l'amour demandait des compromis","Je ne me sentais pas légitime d'exiger","Je n'avais pas conscience que c'était une valeur pour moi"] },
+        { type: "textarea", q: "Comment tes valeurs vont-elles guider tes choix dans ta prochaine relation ?" },
+      ]
+    },
+  ],
+  guerir: [
+    {
+      id: "g1", title: "Les ressources que tu portes en toi",
+      intro: "Inspiré de la psychologie positive : on guérit par les forces, pas seulement par les blessures. Cet exercice révèle ce que les épreuves t'ont donné sans que tu t'en rendes compte.",
+      steps: [
+        { type: "coach", text: "Pense à un moment difficile dans ta vie — pas forcément cette relation — que tu as traversé et surmonté." },
+        { type: "textarea", q: "Décris ce moment en quelques lignes. Qu'est-ce qui s'est passé ?" },
+        { type: "textarea", q: "Qu'est-ce qui t'a aidé·e à traverser ça ? (une qualité, une personne, une décision, une croyance...)" },
+        { type: "multicheck", max: 4, q: "Quelles forces as-tu utilisées sans t'en rendre compte ?", opts: ["Courage","Résilience","Humour","Créativité","Persévérance","Empathie","Intuition","Détermination","Adaptabilité","Foi en la vie","Soutien des autres","Intelligence émotionnelle"] },
+        { type: "textarea", q: "Comment ces mêmes forces sont-elles disponibles pour toi aujourd'hui, dans ce que tu traverses ?" },
+        { type: "coach", text: "Ce que tu as surmonté avant, tu peux le surmonter encore. Tu l'as déjà prouvé." },
+      ]
+    },
+    {
+      id: "g2", title: "Le dialogue avec ta voix intérieure",
+      intro: "Inspiré de la self-compassion de Kristin Neff : on se parle souvent avec une dureté qu'on n'oserait jamais infliger à quelqu'un qu'on aime. Il est temps de changer ça.",
+      steps: [
+        { type: "coach", text: "Pense à la voix dans ta tête quand tu te juges sur cette relation — sur tes choix, tes erreurs, ce que tu aurais dû faire." },
+        { type: "textarea", q: "Qu'est-ce que cette voix dit de toi ? Écris ses mots les plus durs." },
+        { type: "coach", text: "Maintenant imagine que ta meilleure amie te dit exactement la même chose — qu'elle a fait les mêmes choix que toi." },
+        { type: "textarea", q: "Qu'est-ce que tu lui dirais, à elle ? Comment la traiterais-tu ?" },
+        { type: "textarea", q: "Peux-tu t'adresser à toi-même avec les mêmes mots doux ? Écris ce que tu te dirais si tu étais ta meilleure amie." },
+        { type: "choice", q: "Après cet exercice, comment te sens-tu ?", opts: ["Plus doux·ce envers moi-même","Ça reste difficile","Surpris·e de ce que j'ai écrit","Quelque chose s'est déplacé en moi"] },
+      ]
+    },
+    {
+      id: "g3", title: "La lettre de libération",
+      intro: "Inspiré des techniques de thérapie narrative : écrire ce qu'on n'a jamais dit. Cette lettre n'est pas pour être envoyée. Elle est pour toi — pour poser ce que tu portes.",
+      steps: [
+        { type: "coach", text: "Tu vas écrire une lettre. Pas pour l'autre. Pour toi. Dis tout ce que tu n'as jamais pu dire — ta colère, ta tristesse, ce qui t'a manqué, ce que tu regrettes, ce dont tu es fier·e." },
+        { type: "textarea", q: "Commence par : "Il y a des choses que je n'ai jamais dites et que je dois poser ici..."" },
+        { type: "coach", text: "Maintenant, une deuxième lettre. Celle-ci, tu te l'écris à toi-même. À la personne qui a aimé, qui s'est perdu·e, et qui est en train de se retrouver." },
+        { type: "textarea", q: "Commence par : "Je veux que tu saches que..."" },
+        { type: "choice", q: "Comment tu te sens après avoir écrit ces deux lettres ?", opts: ["Plus léger·e, quelque chose s'est libéré","Ça a remué des choses importantes","Encore beaucoup d'émotions","Une certaine paix s'installe"] },
+      ]
+    },
+  ],
+  construire: [
+    {
+      id: "b1", title: "La visualisation du moi épanoui",
+      intro: "Utilisée par les grands coachs et thérapeutes : se projeter dans la version de soi qu'on veut devenir active quelque chose de profond. C'est une répétition mentale de ta propre transformation.",
+      steps: [
+        { type: "coach", text: "Trouve un endroit calme. Respire lentement 3 fois. Maintenant projette-toi 2 ans dans le futur — une version de toi épanoui·e en amour et dans ta vie." },
+        { type: "textarea", q: "Décris cette version de toi. Comment tu te sens ? Comment tu vis ? Comment tu aimes ?" },
+        { type: "textarea", q: "Dans cette vie, qu'est-ce qui est radicalement différent d'aujourd'hui ?" },
+        { type: "textarea", q: "Qu'est-ce que cette version future de toi voudrait dire à la version d'aujourd'hui ?" },
+        { type: "choice", q: "Cette vision de toi épanoui·e, elle te semble…", opts: ["Accessible et réelle","Belle mais lointaine","Exactement ce que je veux","Plus proche que je ne le pensais"] },
+      ]
+    },
+    {
+      id: "b2", title: "Les piliers d'une vraie relation",
+      intro: "Inspiré de "L'art d'aimer" d'Erich Fromm et des recherches de John Gottman : l'amour sain ne s'improvise pas. Il repose sur des fondations que tu peux maintenant nommer clairement.",
+      steps: [
+        { type: "coach", text: "Une vraie relation ne se construit pas sur l'intensité des débuts, ni sur la peur de la perdre. Elle se construit sur des fondations. Identifions les tiennes." },
+        { type: "multicheck", max: 4, q: "Les 4 fondations non-négociables pour toi :", opts: ["Confiance totale","Communication vraie","Respect de l'espace","Projets communs","Désir et attraction","Amitié profonde","Valeurs communes","Soutien mutuel","Liberté préservée","Humour partagé","Croissance ensemble","Stabilité émotionnelle"] },
+        { type: "textarea", q: "Dans ta prochaine relation, qu'est-ce que tu vas faire différemment dès le début ?" },
+        { type: "textarea", q: "Quelle est la chose que tu ne feras plus jamais au nom de l'amour ?" },
+        { type: "choice", q: "Face à quelqu'un qui t'attire mais qui ne respecte pas une de tes fondations, tu feras…", opts: ["Je partirai — j'ai appris","Je lui laisserai une chance d'évoluer","Je communiquerai clairement ma limite","Je ne sais pas encore, mais je travaille là-dessus"] },
+      ]
+    },
+    {
+      id: "b3", title: "La lettre d'engagement envers toi",
+      intro: "Inspiré de "L'homme qui voulait être heureux" de Laurent Gounelle : le bonheur ne vient pas de l'extérieur. Il commence par un engagement profond envers soi-même.",
+      steps: [
+        { type: "coach", text: "Tu as traversé quelque chose de difficile. Tu as travaillé sur toi. Maintenant, il est temps de te faire une promesse — pas à l'autre, à toi." },
+        { type: "textarea", q: "Écris ta promesse envers toi-même. Ce que tu t'engages à ne plus faire, et ce que tu t'engages à honorer." },
+        { type: "multicheck", max: 3, q: "Les 3 choses concrètes que tu vas faire cette semaine pour toi :", opts: ["Reprendre une activité que j'aimais","Passer du temps avec des gens qui me font du bien","Écrire chaque jour 3 choses pour lesquelles je suis reconnaissant·e","Pratiquer la méditation ou la respiration","Faire de l'exercice physique","M'accorder du temps seul·e sans culpabilité","Lire un livre qui m'inspire","Consulter un thérapeute ou un coach","Créer quelque chose — cuisine, art, musique","Partir quelque part, même petit"] },
+        { type: "textarea", q: "Dans 6 mois, si tu lis cette lettre, qu'est-ce que tu veux pouvoir te dire ?" },
+        { type: "coach", text: "Tu mérites l'amour que tu donnes aux autres. Commence par te l'offrir à toi-même." },
+      ]
+    },
+  ],
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function calcAttachment(ans) {
+  const scores = { anxieux: 0, evitant: 0, secure: 0, desorganise: 0 };
+  const map = {
+    6:  ["anxieux", "evitant", "secure", "desorganise"],
+    7:  ["anxieux", "evitant", "secure", "desorganise"],
+    8:  ["anxieux", "evitant", "secure", "desorganise"],
+    9:  ["anxieux", "evitant", "secure", "desorganise"],
+    11: ["anxieux", "evitant", "secure", "desorganise"],
+  };
+  for (const [k, arr] of Object.entries(map)) {
+    const v = ans[+k];
+    if (typeof v === "number" && v >= 0 && v < arr.length) scores[arr[v]]++;
+  }
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  return sorted[0][0];
+}
+
+function calcPhase(ans) {
+  const pain = ans[2] ?? 5;
+  const time = ans[1] ?? 2;
+  if (pain >= 7 || time === 0) return "comprendre";
+  if (pain >= 4 || time === 1) return "guerir";
+  if (pain >= 2) return "construire";
+  return "saimer";
+}
+
+function findPhaseId(exoId) {
+  for (const [pid, exos] of Object.entries(EXOS)) {
+    if (exos.find(e => e.id === exoId)) return pid;
+  }
+  return "comprendre";
+}
+
+// ─── UI COMPONENTS ────────────────────────────────────────────────────────────
+
+function ScaleInput({ value, onChange, minL, maxL }) {
+  return (
+    <div style={{ background: "#fff", borderRadius: 16, padding: 24, border: "1px solid #EDD5CC" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontSize: 12, color: "#8B7060" }}>{minL}</span>
+        <span style={{ fontSize: 22, fontWeight: 400, color: "#E8705A" }}>{value ?? "—"}</span>
+        <span style={{ fontSize: 12, color: "#8B7060" }}>{maxL}</span>
+      </div>
+      <input
+        type="range" min={1} max={10} value={value ?? 5}
+        onChange={e => onChange(+e.target.value)}
+        style={{ width: "100%", accentColor: "#E8705A", cursor: "pointer" }}
+      />
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <span key={n} style={{ fontSize: 10, color: value === n ? "#E8705A" : "#C5A898" }}>{n}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChoiceList({ opts, ans, onPick }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {opts.map((opt, i) => (
+        <button
+          key={i} onClick={() => onPick(i)}
+          style={{
+            padding: "14px 18px", borderRadius: 12, fontSize: 14,
+            fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left", lineHeight: 1.5,
+            background: ans === i ? "#1A1A1A" : "#fff",
+            color: ans === i ? "#F5EDE6" : "#1A1A1A",
+            border: ans === i ? "none" : "1px solid #EDD5CC",
+          }}
+        >{opt}</button>
+      ))}
+    </div>
+  );
+}
+
+function MultiList({ step, ans, onPick }) {
+  const selected = ans || [];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ fontSize: 12, color: "#8B7060", marginBottom: 4 }}>Choisis jusqu'à {step.max}</div>
+      {step.opts.map((opt, i) => {
+        const sel = selected.includes(i);
+        return (
+          <button
+            key={i}
+            onClick={() => {
+              if (sel) onPick(selected.filter(x => x !== i));
+              else if (selected.length < step.max) onPick([...selected, i]);
+            }}
+            style={{
+              padding: "14px 18px", borderRadius: 12, fontSize: 14,
+              fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left",
+              display: "flex", alignItems: "center", gap: 10,
+              background: sel ? "#1A1A1A" : "#fff",
+              color: sel ? "#F5EDE6" : "#1A1A1A",
+              border: sel ? "none" : "1px solid #EDD5CC",
+            }}
+          >
+            <span style={{ width: 18, height: 18, borderRadius: 4, background: sel ? "#fff" : "#F5EDE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {sel && <span style={{ fontSize: 10, color: "#1A1A1A" }}>✓</span>}
+            </span>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function YesNo({ ans, onPick }) {
+  return (
+    <div style={{ display: "flex", gap: 12 }}>
+      {["Oui", "Non"].map((opt, i) => (
+        <button
+          key={i} onClick={() => onPick(i === 0)}
+          style={{
+            flex: 1, padding: 18, borderRadius: 12, fontSize: 15,
+            fontFamily: "Georgia, serif", cursor: "pointer",
+            background: ans === (i === 0) ? "#1A1A1A" : "#fff",
+            color: ans === (i === 0) ? "#F5EDE6" : "#1A1A1A",
+            border: ans === (i === 0) ? "none" : "1px solid #EDD5CC",
+          }}
+        >{opt}</button>
+      ))}
+    </div>
+  );
+}
+
+function AgreeList({ ans, onPick }) {
+  const opts = ["Oui, c'est vrai", "Plutôt oui", "Plutôt non", "Non, pas encore"];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {opts.map((opt, i) => (
+        <button
+          key={i} onClick={() => onPick(i)}
+          style={{
+            padding: "14px 18px", borderRadius: 12, fontSize: 14,
+            fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left",
+            background: ans === i ? "#1A1A1A" : "#fff",
+            color: ans === i ? "#F5EDE6" : "#1A1A1A",
+            border: ans === i ? "none" : "1px solid #EDD5CC",
+          }}
+        >{opt}</button>
+      ))}
+    </div>
+  );
+}
+
+function StepView({ step, ans, setAns }) {
+  if (!step) return null;
+  if (step.type === "coach") {
+    return (
+      <div style={{ background: "#FFF0EB", borderRadius: 16, padding: "20px 24px", borderLeft: "3px solid #E8705A" }}>
+        <div style={{ fontSize: 11, color: "#E8705A", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Ton coach</div>
+        <p style={{ fontSize: 15, color: "#1A1A1A", lineHeight: 1.9, margin: 0, fontStyle: "italic" }}>{step.text}</p>
+      </div>
+    );
+  }
+  if (step.type === "textarea") {
+    return (
+      <div>
+        <textarea
+          value={ans || ""}
+          onChange={e => setAns(e.target.value)}
+          placeholder="Écris ici, librement et honnêtement..."
+          rows={6}
+          style={{ width: "100%", background: "#fff", border: "1px solid #EDD5CC", borderRadius: 12, padding: "16px", fontSize: 14, fontFamily: "Georgia, serif", color: "#1A1A1A", resize: "none", lineHeight: 1.8, boxSizing: "border-box", outline: "none" }}
+        />
+      </div>
+    );
+  }
+  if (step.type === "choice" || step.type === "belief") {
+    return <ChoiceList opts={step.opts} ans={ans} onPick={setAns} />;
+  }
+  if (step.type === "multicheck") {
+    return <MultiList step={{ ...step, max: step.max, opts: step.opts }} ans={ans} onPick={setAns} />;
+  }
+  if (step.type === "qcm" || step.type === "scenario" || step.type === "limit") {
+    return <ChoiceList opts={step.opts} ans={ans} onPick={setAns} />;
+  }
+  if (step.type === "scale") {
+    return <ScaleInput value={ans} onChange={setAns} minL={step.minL} maxL={step.maxL} />;
+  }
+  if (step.type === "multi") {
+    return <MultiList step={step} ans={ans} onPick={setAns} />;
+  }
+  if (step.type === "yesno") {
+    return <YesNo ans={ans} onPick={setAns} />;
+  }
+  if (step.type === "agree") {
+    return <AgreeList ans={ans} onPick={setAns} />;
+  }
+  return null;
+}
+
+function canAnswer(step, ans) {
+  if (!step) return false;
+  if (step.type === "coach") return true;
+  if (step.type === "textarea") return ans && ans.trim().length > 5;
+  if (step.type === "choice" || step.type === "belief") return ans !== undefined;
+  if (step.type === "multicheck") return ans && ans.length > 0;
+  if (step.type === "scale") return ans !== undefined;
+  if (step.type === "multi") return ans && ans.length > 0;
+  if (step.type === "yesno" || step.type === "agree") return ans !== undefined;
+  return ans !== undefined;
+}
+
+// ─── STYLES ──────────────────────────────────────────────────────────────────
+
+const PAGE = {
+  maxWidth: 420, margin: "0 auto",
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  background: "#F5EDE6", minHeight: "100vh",
+};
+
+const BTN_PRIMARY = {
+  width: "100%", padding: 18, borderRadius: 14, fontSize: 15,
+  fontFamily: "Georgia, serif", cursor: "pointer",
+  border: "none", background: "#1A1A1A", color: "#F5EDE6",
+};
+
+const BTN_GHOST = {
+  background: "none", border: "none", fontSize: 13,
+  fontFamily: "Georgia, serif", cursor: "pointer",
+  padding: 0, color: "#8B7060", marginBottom: 20, display: "block",
+};
+
+// ─── APP ─────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [screen, setScreen]       = useState("onboarding");
+  const [dStep, setDStep]         = useState(0);
+  const [dAns, setDAns]           = useState({});
+  const [results, setResults]     = useState(() => {
+    try { const s = localStorage.getItem("rl_results"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const [completed, setCompleted] = useState(() => {
+    try { const s = localStorage.getItem("rl_completed"); return s ? new Set(JSON.parse(s)) : new Set(); } catch { return new Set(); }
+  });
+  const [exo, setExo]             = useState(null);
+  const [eStep, setEStep]         = useState(0);
+  const [eAns, setEAns]           = useState({});
+  const [analysis, setAnalysis]   = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [finalBilan, setFinalBilan]     = useState(null);
+  const [finalLoading, setFinalLoading] = useState(false);
+  const [msgs, setMsgs]           = useState([
+    { role: "assistant", content: "Je suis là avec toi. Dis-moi où tu en es aujourd'hui — pas besoin de tout expliquer. Juste ce que tu ressens en ce moment." }
+  ]);
+  const [chatIn, setChatIn]       = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatRef = useRef(null);
+
+  useEffect(() => {
+    chatRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
+
+  const totalExos = Object.values(EXOS).flat().length;
+  const progress  = results ? Math.round((completed.size / totalExos) * 100) : 0;
+
+  // Diagnostic
+  const currQ = DIAG[dStep];
+  const setDA = v => setDAns(p => ({ ...p, [currQ.id]: v }));
+  const dCanNext = () => {
+    const a = dAns[currQ?.id];
+    if (currQ?.type === "scale") return a !== undefined;
+    if (currQ?.type === "multi") return a && a.length > 0;
+    return a !== undefined;
+  };
+  const dNext = () => {
+    if (dStep < DIAG.length - 1) {
+      setDStep(s => s + 1);
+    } else {
+      const newResults = { attachment: calcAttachment(dAns), phase: calcPhase(dAns) };
+      setResults(newResults);
+      try { localStorage.setItem("rl_results", JSON.stringify(newResults)); } catch {}
+      setScreen("results");
+    }
+  };
+
+  // Exercise
+  const curStep = exo?.steps[eStep];
+  const curAns  = eAns[eStep];
+  const eCanNext = () => canAnswer(curStep, curAns);
+
+  const generateAnalysis = async (currentExo, answers) => {
+    setAnalysisLoading(true);
+    setAnalysis(null);
+    // Formater les réponses de l'exercice en texte lisible
+    const lines = currentExo.steps.map((step, i) => {
+      const ans = answers[i];
+      let ansText = "";
+      if (step.type === "scale") ansText = `${ans}/10`;
+      else if (step.type === "qcm" || step.type === "scenario" || step.type === "limit") ansText = step.opts?.[ans] ?? ans;
+      else if (step.type === "multi") ansText = (ans || []).map(idx => step.opts[idx]).join(", ");
+      else if (step.type === "yesno") ansText = ans === true ? "Oui" : "Non";
+      else if (step.type === "agree") ansText = ["Oui, c'est vrai","Plutôt oui","Plutôt non","Non, pas encore"][ans] ?? ans;
+      return `- ${step.q}\n  Réponse : ${ansText}`;
+    }).join("\n");
+
+    const prompt = `Voici les réponses d'une personne à l'exercice "${currentExo.title}" dans une application de développement personnel sur la guérison après une relation difficile.\n\n${lines}\n\nTu es coach spécialisé en guérison émotionnelle et reconstruction de soi. Génère une analyse en JSON avec exactement cette structure :\n{\n  "titre": "Un titre court et percutant (max 6 mots)",\n  "analyse": "2-3 phrases d'analyse profonde et honnête de ce que ces réponses révèlent sur la personne",\n  "force": "1 force ou ressource que tu vois clairement dans ses réponses",\n  "conseil": "1 conseil concret et actionnable pour cette semaine, spécifique à ses réponses",\n  "affirmation": "1 phrase d'affirmation positive pour reconstruire la confiance en soi, directe et percutante"\n}\nRéponds UNIQUEMENT avec le JSON, sans markdown ni texte autour.`;
+
+    try {
+      const res = await fetch("https://retrouve-lamour-production.up.railway.app/api/analyse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+      const parsed = await res.json();
+      setAnalysis(parsed);
+    } catch {
+      setAnalysis({
+        titre: "Exercice terminé",
+        analyse: "Tu viens de faire un travail important sur toi-même. Chaque réponse honnête est un pas vers la clarté.",
+        force: "Tu as le courage de te regarder en face — c'est rare et précieux.",
+        conseil: "Prends 5 minutes ce soir pour noter ce que cet exercice a soulevé en toi.",
+        affirmation: "Je mérite une relation où je peux être pleinement moi-même."
+      });
+    }
+    setAnalysisLoading(false);
+  };
+
+  const eNext = () => {
+    if (eStep < exo.steps.length - 1) {
+      setEStep(s => s + 1);
+    } else {
+      const finalAnswers = { ...eAns, [eStep]: curAns };
+      setCompleted(p => {
+        const next = new Set([...p, exo.id]);
+        try { localStorage.setItem("rl_completed", JSON.stringify([...next])); } catch {}
+        return next;
+      });
+      setScreen("exo-result");
+      generateAnalysis(exo, finalAnswers);
+    }
+  };
+
+  // Coach
+  const sendChat = async () => {
+    if (!chatIn.trim() || chatLoading) return;
+    const msg = chatIn.trim();
+    setChatIn("");
+    const next = [...msgs, { role: "user", content: msg }];
+    setMsgs(next);
+    setChatLoading(true);
+    try {
+      const res = await fetch("https://retrouve-lamour-production.up.railway.app/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({
+          messages: next.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
+      const data = await res.json();
+      const text = data.text || "Je t'entends. Continue…";
+      setMsgs([...next, { role: "assistant", content: text }]);
+    } catch {
+      setMsgs([...next, { role: "assistant", content: "Une erreur s'est produite. Réessaie." }]);
+    }
+    setChatLoading(false);
+  };
+
+  const generateFinalBilan = async () => {
+    if (finalBilan) { setScreen("fin-parcours"); return; }
+    setFinalLoading(true);
+    setScreen("fin-parcours");
+    const att = results ? ATTACH[results.attachment]?.label : "non défini";
+    const prompt = `Une personne vient de terminer un parcours complet de transformation personnelle (12 exercices sur 4 étapes : Comprendre, Guérir, Construire, et S'aimer). Son profil d'attachement : ${att}.\n\nTu es son coach personnel. Génère un bilan final complet en JSON avec exactement cette structure :\n{\n  "titre": "Un titre beau et fort (max 7 mots)",\n  "intro": "2-3 phrases qui reconnaissent le courage accompli",\n  "chemin": "Synthèse des 3 étapes traversées — 2-3 phrases percutantes",\n  "transformation": "La transformation la plus profonde, spécifique au profil d'attachement — 2 phrases",\n  "prete": "3 signes concrets qu'on est prêt(e) pour une vraie relation saine",\n  "lettre": "Lettre courte du coach (5-6 phrases) intime et motivante vers l'amour",\n  "affirmation": "Affirmation finale puissante et courte",\n  "profil_ideal": "Description précise du profil de partenaire idéal pour cette personne selon son attachement — 3-4 phrases détaillées sur le type de personne, ses traits de caractère, son rapport à l'amour",\n  "compatibilites": ["trait compatible 1", "trait compatible 2", "trait compatible 3", "trait compatible 4", "trait compatible 5"],\n  "incompatibles": ["red flag 1 spécifique à ce profil", "red flag 2", "red flag 3", "red flag 4", "red flag 5"],\n  "reglages": [\n    {"titre": "Réglage 1 court", "desc": "Explication de ce sur quoi travailler personnellement pour cette relation"},\n    {"titre": "Réglage 2 court", "desc": "..."},\n    {"titre": "Réglage 3 court", "desc": "..."},\n    {"titre": "Réglage 4 court", "desc": "..."}\n  ]\n}\nRéponds UNIQUEMENT avec le JSON valide, sans markdown ni texte autour.`;
+    try {
+      const res = await fetch("https://retrouve-lamour-production.up.railway.app/api/bilan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+      const parsed = await res.json();
+      setFinalBilan(parsed);
+    } catch {
+      setFinalBilan({
+        titre: "Tu as tout traversé.",
+        intro: "Ce que tu viens de faire demande un courage rare. Tu t'es regardé(e) en face, sans te mentir. C'est le plus difficile — et tu l'as fait.",
+        chemin: "Tu as compris ce qui s'est vraiment passé dans cette relation. Tu as traversé la douleur pour en sortir plus libre. Et tu sais maintenant ce que tu veux et ce que tu ne veux plus jamais.",
+        transformation: "Tu n'es plus la même personne qu'au début de ce parcours. Quelque chose s'est remis en place — ta propre valeur, ton droit à être aimé(e) vraiment.",
+        prete: "Tu penses à l'avenir plus qu'au passé. Tu te sens entier·e seul·e. Tu sais dire non à ce qui ne te correspond pas.",
+        lettre: "Je veux que tu saches quelque chose : ce que tu as fait ici est rare. Tu aurais pu fuir, te distraire, recommencer les mêmes schémas. Tu as choisi de comprendre. Tu as choisi de guérir. Et maintenant tu te construis. La relation qui vient — quand elle viendra — te trouvera debout. Prêt·e. Entier·e. Va vers l'amour sans peur. Tu mérites quelqu'un qui te voit vraiment.",
+        affirmation: "Je suis prêt·e à aimer et à être aimé·e pleinement.",
+        profil_ideal: "Tu as besoin de quelqu'un de stable émotionnellement, qui sait ce qu'il·elle ressent et le dit clairement. Une personne présente, fiable, qui ne joue pas avec les silences ni avec les mots. Quelqu'un capable d'intimité sans en avoir peur, et qui te laisse de l'espace sans disparaître.",
+        compatibilites: ["Stabilité émotionnelle et cohérence", "Communication ouverte et directe", "Capacité à s'engager vraiment", "Respect de ton espace et de tes limites", "Humour et légèreté dans le quotidien"],
+        incompatibles: ["Les personnalités soufflant le chaud et le froid", "Les personnes qui fuient l'intimité émotionnelle", "Les relations où tu te demandes tout le temps où tu en es", "Les gens qui minimisent tes émotions", "Les profils qui ont besoin d'être sauvés"],
+        reglages: [
+          { titre: "Ralentir au début", desc: "Ne pas confondre intensité des débuts avec vraie connexion. Laisser le temps à la confiance de se construire." },
+          { titre: "Exprimer tes besoins tôt", desc: "Ne pas attendre que la situation soit insupportable. Dire ce dont tu as besoin dès que tu le ressens." },
+          { titre: "Observer les actes", desc: "Les mots séduisent, les actes révèlent. Accorder autant d'importance à ce que l'autre fait qu'à ce qu'il dit." },
+          { titre: "Rester toi-même", desc: "Ne pas te transformer pour plaire. Si tu dois changer qui tu es pour être aimé·e, ce n'est pas la bonne personne." },
+        ],
+      });
+    }
+    setFinalLoading(false);
+  };
+
+  // ─── CLÉ API ─────────────────────────────────────────────────────────────
+
+  // ─── ONBOARDING ──────────────────────────────────────────────────────────
+
+  if (screen === "onboarding") {
+    return (
+      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--cream)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Hero */}
+        <div style={{ background: "var(--dark)", padding: "64px 32px 48px", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(232,112,90,0.12)" }} />
+          <div style={{ position: "absolute", bottom: -40, left: -40, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,112,90,0.08)" }} />
+          <div className="fade-up" style={{ fontSize: 11, letterSpacing: 4, color: "var(--coral)", textTransform: "uppercase", marginBottom: 20, fontFamily: "var(--font-body)", fontWeight: 700 }}>Marlène Gasmi · Coach certifiée</div>
+          <h1 className="fade-up-1" style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 300, color: "#fff", lineHeight: 1.15, margin: "0 0 8px" }}>
+            Comprendre.<br />
+            <span style={{ fontStyle: "italic", color: "var(--coral)" }}>Guérir.</span><br />
+            Construire.
+          </h1>
+          <p className="fade-up-2" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginTop: 20, fontWeight: 300 }}>
+            Un chemin de transformation pour réparer ce qui a été abîmé — et accueillir l'amour que tu mérites.
+          </p>
+        </div>
+
+        {/* Features */}
+        <div style={{ flex: 1, padding: "32px 24px" }}>
+          {[
+            { icon: "◇", title: "Diagnostic précis", desc: "Relation vécue + style d'attachement identifié" },
+            { icon: "◈", title: "Vrais exercices de coaching", desc: "Croyances, valeurs, forces, lettres thérapeutiques" },
+            { icon: "◉", title: "Coach IA personnel", desc: "Disponible à tout moment, bienveillant et direct" },
+          ].map((f, i) => (
+            <div key={i} className={`fade-up-${i+2}`} style={{ display: "flex", gap: 16, marginBottom: 24, alignItems: "flex-start" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--coral-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--coral)", fontSize: 16 }}>{f.icon}</div>
+              <div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 500, color: "var(--dark)", marginBottom: 4 }}>{f.title}</div>
+                <div style={{ fontSize: 13, color: "var(--mid)", lineHeight: 1.6, fontWeight: 300 }}>{f.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div style={{ padding: "0 24px 52px" }}>
+          <button onClick={() => setScreen("diagnostic")}
+            style={{ width: "100%", padding: "18px", borderRadius: 14, fontSize: 14, fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", border: "none", background: "var(--coral)", color: "#fff", boxShadow: "0 8px 24px rgba(232,112,90,0.35)" }}>
+            Commencer mon diagnostic
+          </button>
+          <p style={{ textAlign: "center", fontSize: 12, color: "var(--mid)", marginTop: 12, fontWeight: 300 }}>Confidentiel · Bienveillant · Transformateur</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── DIAGNOSTIC ──────────────────────────────────────────────────────────
+
+  if (screen === "diagnostic") {
+    return (
+      <div style={{ ...PAGE, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <div style={{ padding: "48px 24px 0" }}>
+          <button
+            onClick={() => dStep > 0 ? setDStep(s => s - 1) : setScreen("onboarding")}
+            style={BTN_GHOST}
+          >← Retour</button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+            <div style={{ flex: 1, background: "#EDD5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
+              <div style={{ width: `${((dStep + 1) / DIAG.length) * 100}%`, height: "100%", background: "#E8705A", borderRadius: 99, transition: "width 0.4s" }} />
+            </div>
+            <span style={{ fontSize: 12, color: "#8B7060", flexShrink: 0 }}>{dStep + 1}/{DIAG.length}</span>
+          </div>
+
+          <div style={{ display: "inline-block", padding: "5px 14px", borderRadius: 99, background: currQ.sec === "A" ? "#FDF0EC" : "#FFF0EB", marginBottom: 16 }}>
+            <span style={{ fontSize: 11, color: currQ.sec === "A" ? "#C4574A" : "#E8705A", letterSpacing: 1 }}>
+              {currQ.sec === "A" ? "🌱 La relation passée" : "🧠 Style d'attachement"}
+            </span>
+          </div>
+
+          {currQ.type === "scenario" && (
+            <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Scénario</div>
+          )}
+
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, color: "var(--dark)", lineHeight: 1.55, marginBottom: 28 }}>{currQ.q}</h2>
+
+          {(currQ.type === "qcm" || currQ.type === "scenario") && (
+            <ChoiceList opts={currQ.opts} ans={dAns[currQ.id]} onPick={setDA} />
+          )}
+          {currQ.type === "scale" && (
+            <ScaleInput value={dAns[currQ.id]} onChange={setDA} minL={currQ.minL} maxL={currQ.maxL} />
+          )}
+          {currQ.type === "multi" && (
+            <MultiList step={currQ} ans={dAns[currQ.id]} onPick={setDA} />
+          )}
+        </div>
+
+        <div style={{ flex: 1 }} />
+        <div style={{ padding: "24px 24px 52px" }}>
+          <button
+            onClick={dNext} disabled={!dCanNext()}
+            style={{ ...BTN_PRIMARY, background: dCanNext() ? "#1A1A1A" : "#EDD5CC", color: dCanNext() ? "#F5EDE6" : "#A09090", cursor: dCanNext() ? "pointer" : "default" }}
+          >
+            {dStep < DIAG.length - 1 ? "Question suivante →" : "Voir mes résultats →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── RESULTS ─────────────────────────────────────────────────────────────
+
+  if (screen === "results" && results) {
+    const att = ATTACH[results.attachment];
+    const ph  = PHASES.find(p => p.id === results.phase);
+    return (
+      <div style={{ ...PAGE, paddingBottom: 60 }}>
+        <div style={{ background: att.bg, padding: "52px 24px 32px", textAlign: "center" }}>
+          <div style={{ fontSize: 52 }}>{att.emoji}</div>
+          <div style={{ marginTop: 12, fontSize: 11, letterSpacing: 2, color: att.color, textTransform: "uppercase" }}>Ton profil d'attachement</div>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 300, color: "var(--dark)", margin: "8px 0 0", fontStyle: "italic" }}>{att.label}</h2>
+        </div>
+        <div style={{ padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC", marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.9, margin: 0 }}>{att.desc}</p>
+          </div>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC", marginBottom: 24 }}>
+            <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton point de départ recommandé</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: ph.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{ph.emoji}</div>
+              <div>
+                <div style={{ fontSize: 16, color: "#1A1A1A" }}>{ph.title}</div>
+                <div style={{ fontSize: 13, color: "#8B7060", marginTop: 3 }}>{ph.sub}</div>
+              </div>
+            </div>
+          </div>
+          <button onClick={() => setScreen("home")} style={BTN_PRIMARY}>Commencer mon parcours →</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── HOME ─────────────────────────────────────────────────────────────────
+
+  if (screen === "home") {
+    return (
+      <div style={{ ...PAGE, paddingBottom: 80 }}>
+        {/* Header */}
+        <div style={{ background: "var(--dark)", padding: "52px 24px 28px", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(232,112,90,0.1)" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "var(--coral)", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Ton parcours</div>
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 34, fontWeight: 300, color: "#fff", lineHeight: 1.2 }}>Bienvenue<span style={{ color: "var(--coral)", fontStyle: "italic" }}>.</span></h1>
+            </div>
+            <button onClick={() => { if(window.confirm("Recommencer depuis le début ?")) { localStorage.clear(); setResults(null); setCompleted(new Set()); setScreen("onboarding"); }}} style={{ background: "rgba(255,255,255,0.1)", border: "none", fontSize: 10, color: "rgba(255,255,255,0.5)", cursor: "pointer", borderRadius: 8, padding: "6px 10px", fontFamily: "var(--font-body)", letterSpacing: 1 }}>RESET</button>
+          </div>
+          {/* Progress bar */}
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{completed.size} / {totalExos} exercices</span>
+              <span style={{ fontSize: 20, fontFamily: "var(--font-display)", fontWeight: 400, color: "var(--coral)" }}>{progress}%</span>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 99, height: 4, overflow: "hidden" }}>
+              <div style={{ width: `${progress}%`, height: "100%", background: "var(--coral)", borderRadius: 99, transition: "width 0.8s ease" }} />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: "0 24px" }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: "#8B7060", textTransform: "uppercase", marginBottom: 16 }}>Les 3 étapes</div>
+          {PHASES.map((ph, i) => {
+            const done   = EXOS[ph.id].filter(e => completed.has(e.id)).length;
+            const isReco = results?.phase === ph.id;
+            return (
+              <div key={ph.id} onClick={() => setScreen("phase-" + ph.id)}
+                style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 12, border: isReco ? `1.5px solid ${ph.color}` : "1px solid #EDD5CC", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: ph.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{ph.emoji}</div>
+                <div style={{ flex: 1 }}>
+                  {isReco && <div style={{ fontSize: 10, color: ph.color, letterSpacing: 1, marginBottom: 3 }}>★ RECOMMANDÉ POUR TOI</div>}
+                  <div style={{ fontSize: 11, color: ph.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Étape {i + 1}</div>
+                  <div style={{ fontSize: 15, color: "#1A1A1A" }}>{ph.title}</div>
+                  <div style={{ fontSize: 12, color: "#8B7060", marginTop: 2 }}>{done}/{EXOS[ph.id].length} exercices</div>
+                </div>
+                <div style={{ color: "#D0B8AE", fontSize: 20 }}>›</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ padding: "20px 24px 0" }}>
+          <button onClick={() => setScreen("coach")}
+            style={{ ...BTN_CORAL, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <span style={{ fontSize: 16 }}>◎</span> Parler à ton coach IA
+          </button>
+        </div>
+
+        {completed.size === totalExos && (
+          <div style={{ margin: "16px 24px 0", background: "linear-gradient(135deg, #1A1A1A 0%, #3A1F14 100%)", borderRadius: 16, padding: "24px", textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🌸</div>
+            <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Parcours complet</div>
+            <div style={{ fontSize: 18, color: "#F5EDE6", fontWeight: 400, marginBottom: 8, lineHeight: 1.4 }}>Tu as tout traversé.</div>
+            <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7, marginBottom: 20 }}>Ton bilan final et la lettre de ton coach t'attendent.</div>
+            <button onClick={generateFinalBilan} style={{ background: "#D4574A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
+              Voir mon bilan final →
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── PHASE ────────────────────────────────────────────────────────────────
+
+  const activePhase = PHASES.find(p => screen === "phase-" + p.id);
+  if (activePhase) {
+    return (
+      <div style={{ ...PAGE, paddingBottom: 60 }}>
+        <div style={{ background: activePhase.bg, padding: "48px 24px 32px" }}>
+          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: activePhase.color }}>← Retour</button>
+          <div style={{ fontSize: 36 }}>{activePhase.emoji}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 400, color: "#1A1A1A", margin: "12px 0 8px" }}>{activePhase.title}</h2>
+          <p style={{ fontSize: 14, color: "#8B7060", margin: 0 }}>{activePhase.sub}</p>
+        </div>
+        <div style={{ padding: 24 }}>
+          {EXOS[activePhase.id].map(ex => {
+            const done = completed.has(ex.id);
+            return (
+              <div key={ex.id} onClick={() => { setExo(ex); setEStep(0); setEAns({}); setScreen("exercise"); }}
+                style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 12, border: done ? `1.5px solid ${activePhase.color}` : "1px solid #EDD5CC", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 99, background: done ? activePhase.color : "#F0E0D8", border: done ? "none" : "1.5px solid #D0B8AE", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
+                    {done && <span style={{ color: "#fff", fontSize: 11 }}>✓</span>}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, color: "#1A1A1A", marginBottom: 4 }}>{ex.title}</div>
+                    <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6 }}>{ex.intro.substring(0, 75)}…</div>
+                    <div style={{ fontSize: 12, color: activePhase.color, marginTop: 6 }}>{ex.steps.length} étapes</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── EXERCISE ─────────────────────────────────────────────────────────────
+
+  if (screen === "exercise" && exo) {
+    const pId    = findPhaseId(exo.id);
+    const ph     = PHASES.find(p => p.id === pId);
+    const phColor = ph?.color || "#E8705A";
+    return (
+      <div style={{ ...PAGE, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <div style={{ padding: "48px 24px 0" }}>
+          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>
+            ← {exo.title}
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <div style={{ flex: 1, background: "#EDD5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
+              <div style={{ width: `${(eStep / exo.steps.length) * 100}%`, height: "100%", background: phColor, borderRadius: 99, transition: "width 0.4s" }} />
+            </div>
+            <span style={{ fontSize: 12, color: "#8B7060", flexShrink: 0 }}>{eStep + 1}/{exo.steps.length}</span>
+          </div>
+          {eStep === 0 && (
+            <div style={{ background: "#FAF9F7", borderRadius: 12, padding: "14px 18px", marginBottom: 20, borderLeft: `3px solid ${phColor}` }}>
+              <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7, margin: 0 }}>{exo.intro}</p>
+            </div>
+          )}
+          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: "var(--dark)", lineHeight: 1.6, marginBottom: 24 }}>{curStep?.q}</h3>
+          <StepView step={curStep} ans={curAns} setAns={v => setEAns(p => ({ ...p, [eStep]: v }))} />
+        </div>
+        <div style={{ flex: 1 }} />
+        <div style={{ padding: "24px 24px 52px" }}>
+          <button
+            onClick={eNext} disabled={!eCanNext()}
+            style={{ ...BTN_PRIMARY, background: eCanNext() ? phColor : "#EDD5CC", color: eCanNext() ? "#fff" : "#A09090", cursor: eCanNext() ? "pointer" : "default" }}
+          >
+            {curStep && curStep.type === "coach" ? "J'ai lu →" : eStep < exo.steps.length - 1 ? "Étape suivante →" : "Terminer l'exercice ✓"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── EXO RESULT ───────────────────────────────────────────────────────────
+
+  if (screen === "exo-result" && exo) {
+    const pId = findPhaseId(exo.id);
+    const ph  = PHASES.find(p => p.id === pId);
+    const phColor = ph?.color || "#E8705A";
+    return (
+      <div style={{ ...PAGE, paddingBottom: 60 }}>
+        <div style={{ padding: "48px 24px 24px" }}>
+          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>← Retour</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: ph?.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{ph?.emoji}</div>
+            <div>
+              <div style={{ fontSize: 11, color: phColor, letterSpacing: 1, textTransform: "uppercase" }}>Exercice complété</div>
+              <div style={{ fontSize: 17, color: "#1A1A1A" }}>{exo.title}</div>
+            </div>
+          </div>
+        </div>
+
+        {analysisLoading && (
+          <div style={{ margin: "0 24px", background: "#fff", borderRadius: 16, padding: "32px 24px", border: "1px solid #EDD5CC", textAlign: "center" }}>
+            <div style={{ fontSize: 28, marginBottom: 16 }}>🌿</div>
+            <div style={{ fontSize: 14, color: "#8B7060", lineHeight: 1.8 }}>
+              Ton coach analyse tes réponses…
+            </div>
+            <div style={{ marginTop: 16, display: "flex", justifyContent: "center", gap: 6 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 8, height: 8, borderRadius: 99, background: phColor, opacity: 0.4, animation: `pulse ${0.8 + i * 0.2}s ease-in-out infinite` }} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {analysis && !analysisLoading && (
+          <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Titre + Analyse */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: phColor, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Ce que tes réponses révèlent</div>
+              <div style={{ fontSize: 18, fontWeight: 400, color: "#1A1A1A", marginBottom: 14, lineHeight: 1.4 }}>{analysis.titre}</div>
+              <p style={{ fontSize: 14, color: "#3A2820", lineHeight: 1.9, margin: 0 }}>{analysis.analyse}</p>
+            </div>
+
+            {/* Force */}
+            <div style={{ background: ph?.bg || "#FDF0EC", borderRadius: 16, padding: "20px 24px", border: `1px solid ${phColor}22` }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>💪</div>
+                <div>
+                  <div style={{ fontSize: 11, color: phColor, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta force visible</div>
+                  <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>{analysis.force}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Conseil */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>🎯</div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ton conseil pour cette semaine</div>
+                  <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>{analysis.conseil}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Affirmation */}
+            <div style={{ background: "#1A1A1A", borderRadius: 16, padding: "24px", textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton affirmation du jour</div>
+              <p style={{ fontSize: 17, color: "#F5EDE6", lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>"{analysis.affirmation}"</p>
+            </div>
+
+          </div>
+        )}
+
+        <div style={{ padding: "24px 24px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_PRIMARY}>
+            Continuer le parcours
+          </button>
+          <button onClick={() => { setExo(null); setScreen("coach"); }}
+            style={{ ...BTN_PRIMARY, background: "transparent", border: "1px solid #EDD5CC", color: "#8B7060" }}>
+            En parler au coach IA
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── FIN DU PARCOURS ──────────────────────────────────────────────────────
+
+  if (screen === "fin-parcours") {
+    return (
+      <div style={{ ...PAGE, paddingBottom: 80 }}>
+        <div style={{ background: "#1A1A1A", padding: "52px 24px 40px", textAlign: "center" }}>
+          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: "#8B7060", marginBottom: 28 }}>← Retour</button>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
+          <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>Bilan final</div>
+          {finalLoading ? (
+            <div style={{ fontSize: 16, color: "#F5EDE6", lineHeight: 1.6 }}>Ton coach prépare ton bilan…</div>
+          ) : finalBilan ? (
+            <h2 style={{ fontSize: 26, fontWeight: 400, color: "#F5EDE6", margin: 0, lineHeight: 1.3 }}>{finalBilan.titre}</h2>
+          ) : null}
+        </div>
+
+        {finalLoading && (
+          <div style={{ padding: "40px 24px", textAlign: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 16 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 10, height: 10, borderRadius: 99, background: "#D4574A", opacity: 0.4 }} />
+              ))}
+            </div>
+            <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.8 }}>Quelques instants…<br />Ton coach lit tout ce que tu as traversé.</p>
+          </div>
+        )}
+
+        {finalBilan && !finalLoading && (
+          <div style={{ padding: "28px 24px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Intro */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Ce que tu as accompli</div>
+              <p style={{ fontSize: 15, color: "#1A1A1A", lineHeight: 1.9, margin: "0 0 14px" }}>{finalBilan.intro}</p>
+              <p style={{ fontSize: 14, color: "#3A2820", lineHeight: 1.9, margin: 0 }}>{finalBilan.chemin}</p>
+            </div>
+
+            {/* Transformation */}
+            <div style={{ background: "#FDF0EC", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>🦋</div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta transformation</div>
+                  <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.85, margin: 0 }}>{finalBilan.transformation}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Signes que tu es prêt(e) */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#C4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>🌱 Tu es prêt·e quand…</div>
+              <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.9, margin: 0 }}>{finalBilan.prete}</p>
+            </div>
+
+            {/* Lettre du coach */}
+            <div style={{ background: "#FFF0EB", borderRadius: 16, padding: "24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#E8705A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>💌 La lettre de ton coach</div>
+              <p style={{ fontSize: 15, color: "#1A1A1A", lineHeight: 2, margin: 0, fontStyle: "italic" }}>{finalBilan.lettre}</p>
+            </div>
+
+            {/* Affirmation finale */}
+            <div style={{ background: "#1A1A1A", borderRadius: 16, padding: "24px", textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton affirmation pour l'amour</div>
+              <p style={{ fontSize: 18, color: "#F5EDE6", lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>"{finalBilan.affirmation}"</p>
+            </div>
+
+            {/* ─── SECTION POUR ALLER PLUS LOIN ─── */}
+            <div style={{ marginTop: 8, padding: "20px 0 0" }}>
+              <div style={{ fontSize: 11, letterSpacing: 3, color: "#8B7060", textTransform: "uppercase", marginBottom: 6 }}>Pour aller plus loin</div>
+              <h3 style={{ fontSize: 22, fontWeight: 400, color: "#1A1A1A", margin: "0 0 20px", lineHeight: 1.3 }}>Ton prochain partenaire idéal</h3>
+            </div>
+
+            {/* Profil idéal */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1.5px solid #D4574A" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>💛</div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Le profil fait pour toi</div>
+                  <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.9, margin: 0 }}>{finalBilan.profil_ideal}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Compatibilités */}
+            <div style={{ background: "#FDF0EC", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#C4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>✓ Ce qui est compatible avec toi</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {(finalBilan.compatibilites || []).map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 99, background: "#C4574A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                      <span style={{ color: "#fff", fontSize: 11 }}>✓</span>
+                    </div>
+                    <span style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.6 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Incompatibles */}
+            <div style={{ background: "#FFF0EB", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#E8705A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>⚠ Ce qui ne fonctionne pas avec toi</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {(finalBilan.incompatibles || []).map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 99, background: "#E8705A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                      <span style={{ color: "#fff", fontSize: 13, lineHeight: 1 }}>✕</span>
+                    </div>
+                    <span style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.6 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Réglages personnels */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
+              <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>⚙ Tes réglages pour la prochaine relation</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {(finalBilan.reglages || []).map((r, i) => (
+                  <div key={i} style={{ paddingLeft: 14, borderLeft: "3px solid #EDD5CC" }}>
+                    <div style={{ fontSize: 14, color: "#1A1A1A", fontWeight: 500, marginBottom: 4 }}>{r.titre}</div>
+                    <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7 }}>{r.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA final */}
+            <div style={{ background: "#1A1A1A", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🌸</div>
+              <p style={{ fontSize: 15, color: "#F5EDE6", lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{finalBilan.affirmation}"</p>
+              <button onClick={() => setScreen("coach")} style={{ background: "#D4574A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
+                Parler au coach IA 💬
+              </button>
+            </div>
+
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── COACH ────────────────────────────────────────────────────────────────
+
+  if (screen === "coach") {
+    return (
+      <div style={{ ...PAGE, display: "flex", flexDirection: "column", height: "100vh" }}>
+        <div style={{ padding: "48px 24px 16px", borderBottom: "1px solid #EDD5CC", background: "#fff", flexShrink: 0 }}>
+          <button onClick={() => setScreen("home")} style={BTN_GHOST}>← Retour</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 99, background: "#FDF0EC", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
+            <div>
+              <div style={{ fontSize: 15, color: "#1A1A1A" }}>Coach</div>
+              <div style={{ fontSize: 12, color: "#8B7060" }}>IA · disponible maintenant</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: "20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
+          {msgs.map((m, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+              <div style={{
+                maxWidth: "82%", fontSize: 14, lineHeight: 1.85, padding: "14px 18px",
+                background: m.role === "user" ? "#1A1A1A" : "#fff",
+                color: m.role === "user" ? "#F5EDE6" : "#1A1A1A",
+                border: m.role === "assistant" ? "1px solid #EDD5CC" : "none",
+                borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+              }}>{m.content}</div>
+            </div>
+          ))}
+          {chatLoading && (
+            <div style={{ display: "flex" }}>
+              <div style={{ background: "var(--white)", border: "1px solid var(--cream-dark)", borderRadius: "16px 16px 16px 4px", padding: "16px 20px" }}>
+              <div className="dot-pulse"><span/><span/><span/></div>
+            </div>
+            </div>
+          )}
+          <div ref={chatRef} />
+        </div>
+
+        <div style={{ padding: "16px 24px 36px", background: "#fff", borderTop: "1px solid #EDD5CC", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+            <textarea
+              value={chatIn}
+              onChange={e => setChatIn(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+              placeholder="Écris ce que tu ressens…"
+              rows={2}
+              style={{ flex: 1, background: "#F5EDE7", border: "1px solid #EDD5CC", borderRadius: 12, padding: "12px 16px", fontSize: 14, fontFamily: "Georgia, serif", resize: "none", outline: "none", color: "#1A1A1A", lineHeight: 1.6 }}
+            />
+            <button
+              onClick={sendChat}
+              disabled={chatLoading || !chatIn.trim()}
+              style={{ background: "#E8705A", color: "#fff", border: "none", borderRadius: 12, width: 44, height: 44, fontSize: 18, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: (!chatIn.trim() || chatLoading) ? 0.4 : 1 }}
+            >↑</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
+const domRoot = ReactDOM.createRoot(document.getElementById('root'));
+domRoot.render(<App />);
+</script>
+</body>
+</html>
