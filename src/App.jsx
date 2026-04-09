@@ -1,180 +1,214 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-// ─── DONNÉES ─────────────────────────────────────────────────────────────────
-
-const DIAG = [
-  { id:0, sec:"A", type:"qcm", q:"Comment s'est terminée ta dernière relation importante ?",
-    opts:["Elle·il m'a quitté(e)","Je l'ai quitté(e)","Rupture mutuelle progressive","Trahison ou infidélité","Relation toxique ou abusive"] },
-  { id:1, sec:"A", type:"qcm", q:"Il y a combien de temps ?",
-    opts:["Moins de 3 mois","3 à 6 mois","6 mois à 1 an","Plus d'un an"] },
-  { id:2, sec:"A", type:"scale", q:"Sur cette échelle, où se situe ta douleur aujourd'hui ?", minL:"Je vais bien", maxL:"Douleur intense" },
-  { id:3, sec:"A", type:"qcm", q:"Aujourd'hui, tu penses encore à cette personne…",
-    opts:["Constamment — plusieurs fois par heure","Souvent — plusieurs fois par jour","Parfois — ça va et vient","Rarement — je passe à autre chose"] },
-  { id:4, sec:"A", type:"multi", max:3, q:"Cette relation t'a fait douter de… (jusqu'à 3)",
-    opts:["Ta valeur en tant que partenaire","Ta capacité à bien aimer","Ton jugement et ton intuition","Ta normalité émotionnelle","Rien — c'est l'autre le problème"] },
-  { id:5, sec:"A", type:"qcm", q:"As-tu l'impression de revivre quelque chose de déjà vécu ?",
-    opts:["Oui clairement — c'est un schéma","Peut-être, j'y pense","Non, c'était vraiment unique","Je ne sais pas encore"] },
-  { id:6, sec:"B", type:"qcm", q:"Quand quelqu'un que tu aimes ne répond pas pendant des heures, tu…",
-    opts:["Commence à t'inquiéter et rejoues la conversation","T'en fiches — chacun a sa vie","Attends sereinement sans te faire de film","Oscilles entre indifférence et panique"] },
-  { id:7, sec:"B", type:"qcm", q:"Dans une relation, ce qui est le plus dur pour toi c'est…",
-    opts:["Ne pas être sûr(e) d'être aimé(e) en retour","Quand l'autre veut trop de proximité","Rien de particulier — je m'adapte bien","Alterner entre les deux selon les jours"] },
-  { id:8, sec:"B", type:"scenario", q:"Tu passes une soirée parfaite avec quelqu'un que tu commences à aimer. En rentrant, tu ressens…",
-    opts:["De l'anxiété — et si ce n'était pas réciproque ?","Un léger recul — tu as besoin de ton espace","De la joie simple — c'était bien, point","De la confusion — trop d'émotions mélangées"] },
-  { id:9, sec:"B", type:"qcm", q:"Face à un conflit avec quelqu'un que tu aimes, ta première réaction est…",
-    opts:["M'accrocher et vouloir régler ça tout de suite","Prendre de la distance et me taire","En parler calmement quand le moment est bon","Exploser, puis me retirer complètement"] },
-  { id:10, sec:"B", type:"scale", q:"À quel point fais-tu confiance aux gens naturellement ?", minL:"Pas du tout", maxL:"Très facilement" },
-  { id:11, sec:"B", type:"qcm", q:"Ce qui te fait le plus peur en amour…",
-    opts:["Être abandonné(e) ou pas assez aimé(e)","Perdre ma liberté ou être étouffé(e)","Pas grand-chose — l'amour c'est beau","Les deux à la fois — c'est le paradoxe"] },
-];
-
-const ATTACH = {
-  anxieux: {
-    label: "Attachement anxieux", emoji: "🌊", color: "#C4614A", bg: "#FAF0EC",
-    desc: "Tu aimes intensément et tu as peur de perdre. Tu surveilles les signaux de l'autre à la loupe — parfois au détriment de toi-même. Cette sensibilité est aussi l'une de tes plus grandes forces."
-  },
-  evitant: {
-    label: "Attachement évitant", emoji: "🏔️", color: "#7A9E8B", bg: "#EFF5F2",
-    desc: "Tu te protèges en gardant de la distance. L'intimité te met mal à l'aise sans que tu saches toujours pourquoi. Ta prochaine étape : apprendre à laisser entrer sans te perdre."
-  },
-  secure: {
-    label: "Attachement sécure", emoji: "⚓", color: "#D4944A", bg: "#FDF5EC",
-    desc: "Tu as une base stable. La relation difficile que tu traverses ne remet pas en cause ta capacité à aimer. Tu as toutes les ressources — il faut juste du temps."
-  },
-  desorganise: {
-    label: "Attachement désorganisé", emoji: "🌀", color: "#8B6890", bg: "#F5EDF5",
-    desc: "Tu veux l'amour et tu en as peur en même temps. C'est souvent lié à des expériences anciennes. Ce que tu traverses est réel — et avec le bon chemin, ça peut vraiment transformer ta vie."
-  },
-};
+const BACKEND = "https://retrouve-lamour-production.up.railway.app";
 
 const PHASES = [
-  { id: "comprendre", emoji: "🌱", title: "Comprendre", color: "#7A9E8B", bg: "#EFF5F2", sub: "Voir clairement ce qui s'est passé" },
-  { id: "guerir",     emoji: "🌿", title: "Guérir",     color: "#C4614A", bg: "#FAF0EC", sub: "Reprendre sa place et sa force" },
-  { id: "construire", emoji: "🌸", title: "Construire", color: "#D4944A", bg: "#FDF5EC", sub: "Accueillir une vraie relation" },
+  { id: "comprendre", emoji: "🌱", title: "Comprendre", color: "#C4574A", sub: "Voir ce qui s'est vraiment passé" },
+  { id: "guerir",     emoji: "🌿", title: "Guérir",     color: "#E8705A", sub: "Reprendre ta force intérieure" },
+  { id: "construire", emoji: "🌸", title: "Construire", color: "#D4574A", sub: "Accueillir une vraie relation" },
+  { id: "saimer",     emoji: "✦",  title: "S'aimer",    color: "#1A1A1A", sub: "La fondation de tout le reste" },
+];
+
+const DIAG = [
+  { id:0, sec:"A", type:"qcm", q:"Comment s'est terminée votre dernière relation ?",
+    opts:["Elle m'a quitté(e)","Je l'ai quitté(e)","Rupture mutuelle","Trahison ou infidélité","Relation toxique"] },
+  { id:1, sec:"A", type:"qcm", q:"Il y a combien de temps ?",
+    opts:["Moins de 3 mois","3 à 6 mois","6 mois à 1 an","Plus d'un an"] },
+  { id:2, sec:"A", type:"scale", q:"Sur 10, où se situe ta douleur aujourd'hui ?", minL:"Je vais bien", maxL:"Douleur intense" },
+  { id:3, sec:"A", type:"qcm", q:"Tu penses encore à cette personne...",
+    opts:["Constamment","Souvent","Parfois","Rarement"] },
+  { id:4, sec:"A", type:"multi", max:3, q:"Cette relation t'a fait douter de...",
+    opts:["Ta valeur en tant que partenaire","Ta capacité à bien aimer","Ton jugement","Ta confiance en toi","Ton avenir"] },
+  { id:5, sec:"A", type:"qcm", q:"Revivons-nous quelque chose de déjà vécu ?",
+    opts:["Oui c'est un schéma","Peut-être","Non c'est différent"] },
+  { id:6, sec:"B", type:"qcm", q:"Quand quelqu'un ne répond pas pendant des heures, tu...",
+    opts:["Paniques et envoies des messages","T'inquiètes en silence","Restes calme","Te sens soulagé(e)"] },
+  { id:7, sec:"B", type:"qcm", q:"Dans une relation, le plus dur pour toi c'est...",
+    opts:["Avoir peur d'être abandonné(e)","La trop grande proximité","Exprimer tes besoins","Faire confiance"] },
+  { id:8, sec:"B", type:"qcm", q:"Après une soirée parfaite, tu ressens...",
+    opts:["Une anxiété — et si ce n'était pas réciproque ?","Un léger recul — besoin d'espace","De la joie simple","De la méfiance"] },
+  { id:9, sec:"B", type:"qcm", q:"Face à un conflit, ta première réaction c'est...",
+    opts:["Tout faire pour réconcilier vite","Te fermer et t'isoler","En parler calmement","Fuir la situation"] },
+  { id:10, sec:"B", type:"agree", q:"Je préfère souffrir seul(e) plutôt que de demander de l'aide." },
+  { id:11, sec:"B", type:"qcm", q:"Dans l'amour, tu te sens le plus souvent...",
+    opts:["Trop attaché(e) — peur de perdre","Distant(e) — besoin d'espace","Équilibré(e)","Perdu(e) — les deux à la fois"] },
 ];
 
 const EXOS = {
   comprendre: [
     {
-      id: "c1", title: "La cartographie de la relation",
-      intro: "Analyse la dynamique de ta relation avec précision. Réponds honnêtement — pas ce que tu aurais voulu, ce qui était vraiment.",
+      id: "c1",
+      title: "La ligne du temps",
+      intro: "Chaque relation laisse une empreinte. Cet exercice t'aide à voir les fils invisibles qui relient tes histoires d'amour.",
       steps: [
-        { type: "scale", q: "Dans cette relation, à quel point te sentais-tu toi-même ?", minL: "Jamais moi-même", maxL: "Totalement moi-même" },
-        { type: "qcm", q: "Qui donnait le plus dans cette relation ?", opts: ["Moi, clairement","L'autre, clairement","C'était équilibré","Ça variait beaucoup"] },
-        { type: "qcm", q: "Comment te sentais-tu le plus souvent ?", opts: ["En sécurité et aimé(e)","Sur des œufs — incertain(e)","Libre mais distant(e)","Passionné(e) mais épuisé(e)"] },
-        { type: "scale", q: "Dans quelle mesure cette relation répondait à tes besoins profonds ?", minL: "Pas du tout", maxL: "Pleinement" },
-        { type: "qcm", q: "Le moment où tu aurais dû partir, c'était…", opts: ["Dès le début","Au milieu","Vers la fin","Il n'y en avait pas — j'ai choisi de partir"] },
+        { type: "coach", text: "Pense à tes 3 dernières relations importantes. Pas besoin d'aller loin dans les détails — juste les ressentir." },
+        { type: "textarea", q: "Dans chaque relation, comment te sentais-tu au fond ? (en sécurité, anxieux·se, libre, étouffé·e...)" },
+        { type: "textarea", q: "Y a-t-il un type de personne que tu choisis souvent ? Décris ce profil honnêtement." },
+        { type: "choice", q: "Ce schéma relationnel vient selon toi...", opts: ["De ma relation avec mes parents","D'une blessure ancienne","D'une croyance sur ce que je mérite","Je ne sais pas encore"] },
+        { type: "textarea", q: "Qu'est-ce que cette ligne du temps te révèle sur toi ?" },
       ]
     },
     {
-      id: "c2", title: "Identifier le schéma",
-      intro: "Ces situations correspondent-elles à ce que tu as vécu ? Réponds vite, sans trop réfléchir.",
+      id: "c2",
+      title: "Tes croyances sur l'amour",
+      intro: "Nos croyances sur l'amour se forment tôt — souvent avant qu'on sache qu'elles existent. Inspiré du travail de Byron Katie.",
       steps: [
-        { type: "yesno", q: "Tu t'es excusé(e) pour des choses dont tu n'étais pas vraiment responsable." },
-        { type: "yesno", q: "Tu as mis tes propres besoins de côté pour ne pas faire de vague." },
-        { type: "yesno", q: "Tu aimais cette personne plus que tu ne t'aimais toi-même à ce moment." },
-        { type: "yesno", q: "Ce n'est pas la première fois que tu vis ce type de dynamique." },
-        { type: "qcm", q: "Si ce schéma avait un nom, ce serait…", opts: ["Oublier de m'aimer","Choisir des gens indisponibles","Confondre intensité et amour","Avoir peur de finir seul(e)"] },
+        { type: "coach", text: "Lis chaque affirmation. Réponds vite, sans réfléchir. C'est ta première réaction qui compte." },
+        { type: "belief", q: "Je dois mériter d'être aimé(e).", opts: ["Vrai, je le ressens","Parfois vrai","Faux, j'ai de la valeur","Je ne sais pas"] },
+        { type: "belief", q: "Si quelqu'un me quitte, c'est que je ne suis pas assez bien.", opts: ["Vrai, je le ressens","Parfois vrai","Faux, les ruptures sont complexes","Je ne sais pas"] },
+        { type: "belief", q: "L'amour fait toujours souffrir.", opts: ["Vrai, c'est mon expérience","Parfois vrai","Faux, l'amour peut être léger","Je ne sais pas"] },
+        { type: "textarea", q: "Quelle est LA croyance sur l'amour qui te pèse le plus ? Écris-la ici." },
+        { type: "textarea", q: "Imagine un monde où cette croyance n'est pas vraie. Qu'est-ce qui changerait pour toi ?" },
       ]
     },
     {
-      id: "c3", title: "Ce que j'ai vraiment perdu",
-      intro: "On perd rarement juste une personne. On perd aussi des choses plus profondes. Identifions ce qui fait vraiment mal.",
+      id: "c3",
+      title: "La carte de tes valeurs",
+      intro: "Quand une relation se termine, c'est souvent parce que des valeurs fondamentales ont été trahies.",
       steps: [
-        { type: "multi", max: 4, q: "Ce que tu as perdu avec cette relation (jusqu'à 4) :", opts: ["La sécurité émotionnelle","Un projet de vie commun","La confiance en mon jugement","Une image de moi-même","Des amis ou proches","La confiance en l'amour","L'espoir d'une vraie famille","Un style de vie"] },
-        { type: "scale", q: "À quel point as-tu l'impression d'avoir perdu une partie de toi-même ?", minL: "Pas vraiment", maxL: "Complètement" },
-        { type: "qcm", q: "Ce deuil, aujourd'hui tu en es où ?", opts: ["Je nie encore que c'est fini","Je suis en colère","Je tente de négocier avec le passé","Je traverse la tristesse","J'accepte et je tourne la page"] },
+        { type: "coach", text: "Les valeurs ne sont pas des qualités qu'on admire chez les autres. Ce sont les choses sans lesquelles tu ne peux pas être toi-même." },
+        { type: "multicheck", max: 5, q: "Choisis tes 5 valeurs les plus essentielles :", opts: ["Liberté","Sécurité","Authenticité","Loyauté","Croissance","Tendresse","Indépendance","Profondeur","Humour","Respect","Passion","Stabilité"] },
+        { type: "textarea", q: "Dans ta dernière relation, laquelle de ces valeurs était régulièrement bafouée ?" },
+        { type: "choice", q: "Tu as accepté cette trahison de tes valeurs parce que...", opts: ["Peur de perdre l'autre","L'amour demande des compromis","Je ne me sentais pas légitime d'exiger","Je n'en avais pas conscience"] },
+        { type: "textarea", q: "Comment tes valeurs vont-elles guider tes choix dans ta prochaine relation ?" },
       ]
     },
   ],
   guerir: [
     {
-      id: "g1", title: "L'inventaire émotionnel",
-      intro: "Ces 8 émotions — à quel point les ressens-tu en ce moment par rapport à cette relation ?",
+      id: "g1",
+      title: "Tes ressources cachées",
+      intro: "On guérit par les forces, pas seulement par les blessures. Cet exercice révèle ce que les épreuves t'ont donné sans que tu t'en rendes compte.",
       steps: [
-        { type: "scale", q: "Colère envers l'autre", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Tristesse profonde", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Honte ou humiliation", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Culpabilité envers moi-même", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Peur de ne plus retrouver quelqu'un", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Soulagement (ça peut coexister)", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Nostalgie du passé", minL: "Pas du tout", maxL: "Très intense" },
-        { type: "scale", q: "Espoir pour l'avenir", minL: "Pas du tout", maxL: "Très intense" },
+        { type: "coach", text: "Pense à un moment difficile dans ta vie que tu as traversé et surmonté. Pas forcément cette relation." },
+        { type: "textarea", q: "Décris ce moment en quelques lignes. Qu'est-ce qui s'est passé ?" },
+        { type: "textarea", q: "Qu'est-ce qui t'a aidé(e) à traverser ça ? (une qualité, une personne, une décision...)" },
+        { type: "multicheck", max: 4, q: "Quelles forces as-tu utilisées sans t'en rendre compte ?", opts: ["Courage","Résilience","Humour","Créativité","Persévérance","Empathie","Intuition","Détermination","Adaptabilité","Foi en la vie"] },
+        { type: "textarea", q: "Comment ces mêmes forces sont-elles disponibles pour toi aujourd'hui ?" },
+        { type: "coach", text: "Ce que tu as surmonté avant, tu peux le surmonter encore. Tu l'as déjà prouvé." },
       ]
     },
     {
-      id: "g2", title: "Le pardon — pas pour l'autre",
-      intro: "Le pardon n'est pas dire que c'était acceptable. C'est décider de ne plus porter le poids.",
+      id: "g2",
+      title: "Ta voix intérieure",
+      intro: "On se parle souvent avec une dureté qu'on n'oserait jamais infliger à quelqu'un qu'on aime. Inspiré de la self-compassion de Kristin Neff.",
       steps: [
-        { type: "scale", q: "À quel point te sens-tu encore prisonnier(ère) de la rancœur ?", minL: "Libéré(e)", maxL: "Totalement prisonnier(ère)" },
-        { type: "qcm", q: "Ce qui t'empêche le plus de lâcher prise…", opts: ["Je veux encore une explication","Je veux qu'il/elle reconnaisse ce qu'il/elle a fait","J'ai peur que pardonner valide ce qui s'est passé","Je ne sais pas comment faire"] },
-        { type: "yesno", q: "Es-tu prêt(e) à décider de ne plus laisser cette histoire définir qui tu es ?" },
-        { type: "qcm", q: "La personne envers qui tu dois le plus travailler le pardon…", opts: ["L'autre — pour ce qu'il/elle m'a fait","Moi-même — pour mes propres choix","Les deux à part égale","Quelqu'un de plus ancien que cette relation"] },
-        { type: "scale", q: "Si le pardon était un chemin de 1 à 10, tu en es où ?", minL: "Pas commencé", maxL: "Accompli" },
+        { type: "coach", text: "Pense à la voix dans ta tête quand tu te juges sur cette relation — sur tes choix, tes erreurs, ce que tu aurais dû faire." },
+        { type: "textarea", q: "Qu'est-ce que cette voix dit de toi ? Écris ses mots les plus durs." },
+        { type: "coach", text: "Maintenant imagine que ta meilleure amie te dit exactement la même chose — qu'elle a fait les mêmes choix que toi." },
+        { type: "textarea", q: "Qu'est-ce que tu lui dirais, à elle ? Comment la traiterais-tu ?" },
+        { type: "textarea", q: "Peux-tu t'adresser à toi-même avec ces mêmes mots doux ? Écris-le." },
+        { type: "choice", q: "Après cet exercice, comment te sens-tu ?", opts: ["Plus doux·ce envers moi-même","Ca reste difficile","Surpris(e) de ce que j'ai écrit","Quelque chose s'est déplacé en moi"] },
       ]
     },
     {
-      id: "g3", title: "Qui suis-je sans cette relation ?",
-      intro: "Valide ou invalide ces affirmations — pas ce que tu devrais ressentir, ce que tu ressens vraiment.",
+      id: "g3",
+      title: "La lettre de libération",
+      intro: "Écrire ce qu'on n'a jamais dit libère quelque chose de profond. Cette lettre n'est pas pour être envoyée. Elle est pour toi.",
       steps: [
-        { type: "agree", q: "Je sais ce que j'aime dans la vie, indépendamment d'une relation." },
-        { type: "agree", q: "J'ai des proches sur qui je peux vraiment compter." },
-        { type: "agree", q: "Je suis capable de me rendre heureux·se seul(e)." },
-        { type: "agree", q: "Je connais mes qualités en dehors de ce que j'apporte en couple." },
-        { type: "qcm", q: "Quand tu imagines ta vie dans 1 an, sans cette relation, tu vois…", opts: ["Quelque chose de possible mais flou","Quelque chose d'effrayant","Quelque chose d'excitant","Du vide — je n'arrive pas à imaginer"] },
+        { type: "coach", text: "Tu vas écrire une lettre. Pas pour l'autre. Pour toi. Dis tout ce que tu n'as jamais pu dire — ta colère, ta tristesse, ce que tu regrettes." },
+        { type: "textarea", q: "Commence par : Il y a des choses que je n'ai jamais dites et que je dois poser ici..." },
+        { type: "coach", text: "Maintenant, une deuxième lettre. Celle-ci, tu te l'écris à toi-même. À la personne qui a aimé et qui est en train de se retrouver." },
+        { type: "textarea", q: "Commence par : Je veux que tu saches que..." },
+        { type: "choice", q: "Comment tu te sens après avoir écrit ces deux lettres ?", opts: ["Plus léger(e), quelque chose s'est libéré","Ca a remué des choses importantes","Encore beaucoup d'émotions","Une certaine paix s'installe"] },
       ]
     },
   ],
   construire: [
     {
-      id: "b1", title: "Mes besoins fondamentaux",
-      intro: "Pas ce que tu veux chez l'autre. Ce dont tu as BESOIN pour être bien. C'est différent.",
+      id: "b1",
+      title: "La visualisation du moi épanoui",
+      intro: "Se projeter dans la version de soi qu'on veut devenir active quelque chose de profond. C'est une répétition mentale de ta propre transformation.",
       steps: [
-        { type: "multi", max: 4, q: "Tes 4 besoins non-négociables en relation :", opts: ["Sécurité émotionnelle","Liberté et espace personnel","Communication ouverte","Complicité et humour","Ambition et projets communs","Tendresse et affection","Stabilité et fiabilité","Profondeur intellectuelle","Valeurs communes","Passion et désir"] },
-        { type: "qcm", q: "Dans ta dernière relation, quel besoin fondamental n'était PAS satisfait ?", opts: ["La sécurité","La liberté","La communication honnête","Le respect de qui je suis"] },
-        { type: "scale", q: "À quel point tu te permets d'avoir des exigences en amour ?", minL: "Je m'efface", maxL: "Je me respecte pleinement" },
+        { type: "coach", text: "Trouve un endroit calme. Respire lentement 3 fois. Maintenant projette-toi 2 ans dans le futur — une version de toi épanoui(e) en amour et dans ta vie." },
+        { type: "textarea", q: "Décris cette version de toi. Comment tu te sens ? Comment tu vis ? Comment tu aimes ?" },
+        { type: "textarea", q: "Dans cette vie, qu'est-ce qui est radicalement différent d'aujourd'hui ?" },
+        { type: "textarea", q: "Qu'est-ce que cette version future de toi voudrait dire à la version d'aujourd'hui ?" },
+        { type: "choice", q: "Cette vision de toi épanoui(e), elle te semble...", opts: ["Accessible et réelle","Belle mais lointaine","Exactement ce que je veux","Plus proche que je ne le pensais"] },
       ]
     },
     {
-      id: "b2", title: "Mes limites non-négociables",
-      intro: "Des scénarios concrets. Pas de bonne réponse — juste ce que TU accepterais ou non.",
+      id: "b2",
+      title: "Les piliers d'une vraie relation",
+      intro: "L'amour sain ne s'improvise pas. Il repose sur des fondations que tu peux maintenant nommer clairement. Inspiré de John Gottman et Erich Fromm.",
       steps: [
-        { type: "limit", q: "Quelqu'un que tu aimes consulte régulièrement ses ex sans te le dire.", opts: ["Pas de problème","Je lui en parle, mais ok","C'est une limite pour moi","C'est rédhibitoire"] },
-        { type: "limit", q: "Ton·ta partenaire a des sautes d'humeur qui te font marcher sur des œufs.", opts: ["Ça fait partie de la vie","Je cherche à comprendre","C'est une limite pour moi","Je pars — j'ai déjà donné"] },
-        { type: "limit", q: "Il·elle ne dit jamais 'je t'aime' mais le montre à sa façon.", opts: ["Ça me suffit","J'aimerais plus, mais ok","C'est une limite pour moi","J'ai besoin des mots — c'est vital"] },
-        { type: "limit", q: "Votre vie sociale est quasi inexistante — il·elle préfère rester à deux.", opts: ["Idéal pour moi","Parfois frustrant","C'est une limite pour moi","Inacceptable — j'ai besoin de ma vie"] },
-        { type: "qcm", q: "La limite la plus importante à poser avant cette nouvelle étape…", opts: ["Ne plus accepter l'incertitude émotionnelle","Ne plus me perdre pour rendre l'autre heureux·se","Ne plus confondre intensité et amour sain","Ne plus ignorer les signaux d'alarme"] },
+        { type: "coach", text: "Une vraie relation ne se construit pas sur l'intensité des débuts, ni sur la peur de la perdre. Elle se construit sur des fondations solides." },
+        { type: "multicheck", max: 4, q: "Tes 4 fondations non-négociables :", opts: ["Confiance totale","Communication vraie","Respect de l'espace","Projets communs","Désir et attraction","Amitié profonde","Valeurs communes","Soutien mutuel","Liberté préservée","Stabilité émotionnelle"] },
+        { type: "textarea", q: "Dans ta prochaine relation, qu'est-ce que tu vas faire différemment dès le début ?" },
+        { type: "textarea", q: "Quelle est la chose que tu ne feras plus jamais au nom de l'amour ?" },
+        { type: "choice", q: "Face à quelqu'un qui t'attire mais ne respecte pas une de tes fondations, tu...", opts: ["Je partirai — j'ai appris","Je lui laisserai une chance d'évoluer","Je poserai mes limites clairement","Je ne sais pas encore"] },
       ]
     },
     {
-      id: "b3", title: "Suis-je prêt(e) ?",
-      intro: "Ce n'est pas un test à réussir. C'est une boussole. Réponds avec la vérité du moment.",
+      id: "b3",
+      title: "Ta lettre d'engagement",
+      intro: "Inspiré du livre L'homme qui voulait être heureux : le bonheur commence par un engagement profond envers soi-même.",
       steps: [
-        { type: "yesno", q: "Je peux penser à la relation passée sans que ça prenne toute la place." },
-        { type: "yesno", q: "Je sais ce que je veux — et ce que je ne veux plus." },
-        { type: "yesno", q: "Je ne cherche pas quelqu'un pour fuir ma solitude ou ma douleur." },
-        { type: "yesno", q: "Je suis capable de m'aimer seul(e) avant d'aimer quelqu'un d'autre." },
-        { type: "scale", q: "En toute honnêteté, à quel point es-tu prêt(e) pour une relation saine ?", minL: "Pas encore", maxL: "Totalement prêt(e)" },
+        { type: "coach", text: "Tu as traversé quelque chose de difficile. Tu as travaillé sur toi. Maintenant, il est temps de te faire une promesse — pas à l'autre, à toi." },
+        { type: "textarea", q: "Écris ta promesse envers toi-même. Ce que tu t'engages à ne plus faire, et ce que tu t'engages à honorer." },
+        { type: "multicheck", max: 3, q: "Les 3 choses concrètes que tu vas faire cette semaine pour toi :", opts: ["Reprendre une activité que j'aimais","Passer du temps avec des gens qui me font du bien","Écrire chaque jour 3 choses positives sur moi","Pratiquer la méditation","Faire de l'exercice","M'accorder du temps seul(e)","Lire un livre inspirant","Créer quelque chose"] },
+        { type: "textarea", q: "Dans 6 mois, si tu lis cette lettre, qu'est-ce que tu veux pouvoir te dire ?" },
+        { type: "coach", text: "Tu mérites l'amour que tu donnes aux autres. Commence par te l'offrir à toi-même." },
+      ]
+    },
+  ],
+  saimer: [
+    {
+      id: "s1",
+      title: "Ta voix intérieure",
+      intro: "Nous avons tous une voix qui commente et juge. Cet exercice inspiré de la thérapie ACT t'aide à identifier cette voix et à ne plus la laisser diriger ta vie.",
+      steps: [
+        { type: "coach", text: "Ferme les yeux un instant. Écoute ce que ta voix intérieure te dit en ce moment sur toi-même. Sans la juger — juste l'observer." },
+        { type: "textarea", q: "Quels sont les 3 messages récurrents que cette voix te répète sur toi ? (exemple : tu n'es pas assez bien, tu aurais dû faire mieux...)" },
+        { type: "choice", q: "Cette voix intérieure ressemble le plus à...", opts: ["Un critique sévère qui ne te fait jamais confiance","Un juge qui comptabilise toutes tes erreurs","Un protecteur anxieux qui anticipe le pire","Un perfectionniste qui ne te laisse jamais tranquille"] },
+        { type: "textarea", q: "Si cette voix était une personne, que lui dirais-tu ? Parle-lui directement." },
+        { type: "textarea", q: "Maintenant, imagine une voix qui t'aimerait inconditionnellement. Qu'est-ce qu'elle te dirait sur toi ?" },
+        { type: "coach", text: "Tu n'es pas cette voix. Tu es celui ou celle qui l'entend. Et tu peux choisir à laquelle tu obéis." },
+      ]
+    },
+    {
+      id: "s2",
+      title: "L'amour de soi au quotidien",
+      intro: "L'amour de soi n'est pas un sentiment — c'est une pratique. Inspiré de Brené Brown : on construit l'amour de soi chaque jour par des actes concrets.",
+      steps: [
+        { type: "coach", text: "L'amour de soi se voit dans les petites décisions quotidiennes. Pas dans les grandes déclarations." },
+        { type: "choice", q: "Quand tu as un besoin (repos, aide, espace), tu...", opts: ["L'ignores et continues comme si de rien n'était","L'exprimes difficilement, avec culpabilité","Attends que l'autre devine sans demander","Le reconnais et le poses clairement"] },
+        { type: "textarea", q: "Qu'est-ce que tu t'interdis de faire pour toi par peur du regard des autres ou par culpabilité ?" },
+        { type: "multicheck", max: 4, q: "Les actes d'amour envers toi que tu vas pratiquer :", opts: ["Dire non sans m'excuser","Me reposer sans culpabilité","Demander de l'aide sans honte","Bien me nourrir et bien dormir","M'offrir du temps seul(e)","Célébrer mes petites réussites","Poser des limites claires","Prendre du plaisir sans le mériter"] },
+        { type: "textarea", q: "Quel est l'acte d'amour envers toi-même que tu repousses depuis trop longtemps ? Qu'est-ce qui t'en empêche ?" },
+      ]
+    },
+    {
+      id: "s3",
+      title: "La joie sans condition",
+      intro: "La joie n'attend pas les circonstances idéales. Elle se choisit et se cultive. Inspiré de L'homme qui voulait être heureux de Laurent Gounelle.",
+      steps: [
+        { type: "coach", text: "La joie de vivre ne vient pas de l'extérieur. Elle ne viendra pas d'une relation, d'un succès ou d'une validation. Elle est déjà en toi." },
+        { type: "textarea", q: "Qu'est-ce qui te faisait ressentir de la joie pure avant — avant cette relation, avant ces épreuves ?" },
+        { type: "textarea", q: "En ce moment, qu'est-ce qui, même légèrement, te fait te sentir vivant(e) ?" },
+        { type: "choice", q: "Ta relation à la solitude aujourd'hui, c'est...", opts: ["Un vide qui me pèse — j'ai du mal à être seul(e)","Un repos bienvenu — j'apprends à l'apprécier","Un espace de liberté que je commence à aimer","Ma fondation — je me retrouve quand je suis seul(e)"] },
+        { type: "textarea", q: "Si tu savais que personne ne te juge et que tu ne risques rien — qu'est-ce que tu ferais pour toi dès demain ?" },
+        { type: "coach", text: "Tu n'as pas besoin de quelqu'un pour commencer à vivre pleinement. Tu as juste besoin de toi." },
+        { type: "textarea", q: "Écris ta propre définition de la joie. Pas celle des livres ou des réseaux sociaux. La tienne." },
       ]
     },
   ],
 };
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-
 function calcAttachment(ans) {
   const scores = { anxieux: 0, evitant: 0, secure: 0, desorganise: 0 };
   const map = {
-    6:  ["anxieux", "evitant", "secure", "desorganise"],
-    7:  ["anxieux", "evitant", "secure", "desorganise"],
-    8:  ["anxieux", "evitant", "secure", "desorganise"],
-    9:  ["anxieux", "evitant", "secure", "desorganise"],
-    11: ["anxieux", "evitant", "secure", "desorganise"],
+    6:  ["anxieux","evitant","secure","secure"],
+    7:  ["anxieux","evitant","secure","desorganise"],
+    8:  ["anxieux","evitant","secure","desorganise"],
+    9:  ["anxieux","evitant","secure","evitant"],
+    11: ["anxieux","evitant","secure","desorganise"],
   };
   for (const [k, arr] of Object.entries(map)) {
     const v = ans[+k];
-    if (typeof v === "number" && arr[v]) scores[arr[v]]++;
+    if (typeof v === "number" && v >= 0 && v < arr.length) scores[arr[v]]++;
   }
-  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  return Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
 }
 
 function calcPhase(ans) {
@@ -182,907 +216,591 @@ function calcPhase(ans) {
   const time = ans[1] ?? 2;
   if (pain >= 7 || time === 0) return "comprendre";
   if (pain >= 4 || time === 1) return "guerir";
-  return "construire";
+  if (pain >= 2) return "construire";
+  return "saimer";
 }
 
-function findPhaseId(exoId) {
-  for (const [pid, exos] of Object.entries(EXOS)) {
-    if (exos.find(e => e.id === exoId)) return pid;
-  }
-  return "comprendre";
-}
-
-// ─── UI COMPONENTS ────────────────────────────────────────────────────────────
-
-function ScaleInput({ value, onChange, minL, maxL }) {
-  return (
-    <div style={{ background: "#fff", borderRadius: 16, padding: 24, border: "1px solid #E8D5CC" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{ fontSize: 12, color: "#8B6355" }}>{minL}</span>
-        <span style={{ fontSize: 22, fontWeight: 400, color: "#C4614A" }}>{value ?? "—"}</span>
-        <span style={{ fontSize: 12, color: "#8B6355" }}>{maxL}</span>
-      </div>
-      <input
-        type="range" min={1} max={10} value={value ?? 5}
-        onChange={e => onChange(+e.target.value)}
-        style={{ width: "100%", accentColor: "#C4614A", cursor: "pointer" }}
-      />
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => (
-          <span key={n} style={{ fontSize: 10, color: value === n ? "#C4614A" : "#C5A898" }}>{n}</span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ChoiceList({ opts, ans, onPick }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {opts.map((opt, i) => (
-        <button
-          key={i} onClick={() => onPick(i)}
-          style={{
-            padding: "14px 18px", borderRadius: 12, fontSize: 14,
-            fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left", lineHeight: 1.5,
-            background: ans === i ? "#1A0F0A" : "#fff",
-            color: ans === i ? "#FBF7F4" : "#1A0F0A",
-            border: ans === i ? "none" : "1px solid #E8D5CC",
-          }}
-        >{opt}</button>
-      ))}
-    </div>
-  );
-}
-
-function MultiList({ step, ans, onPick }) {
-  const selected = ans || [];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ fontSize: 12, color: "#8B6355", marginBottom: 4 }}>Choisis jusqu'à {step.max}</div>
-      {step.opts.map((opt, i) => {
-        const sel = selected.includes(i);
-        return (
-          <button
-            key={i}
-            onClick={() => {
-              if (sel) onPick(selected.filter(x => x !== i));
-              else if (selected.length < step.max) onPick([...selected, i]);
-            }}
-            style={{
-              padding: "14px 18px", borderRadius: 12, fontSize: 14,
-              fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left",
-              display: "flex", alignItems: "center", gap: 10,
-              background: sel ? "#1A0F0A" : "#fff",
-              color: sel ? "#FBF7F4" : "#1A0F0A",
-              border: sel ? "none" : "1px solid #E8D5CC",
-            }}
-          >
-            <span style={{ width: 18, height: 18, borderRadius: 4, background: sel ? "#fff" : "#F5EDE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {sel && <span style={{ fontSize: 10, color: "#1A0F0A" }}>✓</span>}
-            </span>
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function YesNo({ ans, onPick }) {
-  return (
-    <div style={{ display: "flex", gap: 12 }}>
-      {["Oui", "Non"].map((opt, i) => (
-        <button
-          key={i} onClick={() => onPick(i === 0)}
-          style={{
-            flex: 1, padding: 18, borderRadius: 12, fontSize: 15,
-            fontFamily: "Georgia, serif", cursor: "pointer",
-            background: ans === (i === 0) ? "#1A0F0A" : "#fff",
-            color: ans === (i === 0) ? "#FBF7F4" : "#1A0F0A",
-            border: ans === (i === 0) ? "none" : "1px solid #E8D5CC",
-          }}
-        >{opt}</button>
-      ))}
-    </div>
-  );
-}
-
-function AgreeList({ ans, onPick }) {
-  const opts = ["Oui, c'est vrai", "Plutôt oui", "Plutôt non", "Non, pas encore"];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {opts.map((opt, i) => (
-        <button
-          key={i} onClick={() => onPick(i)}
-          style={{
-            padding: "14px 18px", borderRadius: 12, fontSize: 14,
-            fontFamily: "Georgia, serif", cursor: "pointer", textAlign: "left",
-            background: ans === i ? "#1A0F0A" : "#fff",
-            color: ans === i ? "#FBF7F4" : "#1A0F0A",
-            border: ans === i ? "none" : "1px solid #E8D5CC",
-          }}
-        >{opt}</button>
-      ))}
-    </div>
-  );
-}
-
-function StepView({ step, ans, setAns }) {
-  if (!step) return null;
-  if (step.type === "qcm" || step.type === "scenario" || step.type === "limit") {
-    return <ChoiceList opts={step.opts} ans={ans} onPick={setAns} />;
-  }
-  if (step.type === "scale") {
-    return <ScaleInput value={ans} onChange={setAns} minL={step.minL} maxL={step.maxL} />;
-  }
-  if (step.type === "multi") {
-    return <MultiList step={step} ans={ans} onPick={setAns} />;
-  }
-  if (step.type === "yesno") {
-    return <YesNo ans={ans} onPick={setAns} />;
-  }
-  if (step.type === "agree") {
-    return <AgreeList ans={ans} onPick={setAns} />;
-  }
-  return null;
-}
-
-function canAnswer(step, ans) {
-  if (!step) return false;
-  if (step.type === "scale") return ans !== undefined;
-  if (step.type === "multi") return ans && ans.length > 0;
-  if (step.type === "yesno" || step.type === "agree") return ans !== undefined;
-  return ans !== undefined;
-}
-
-// ─── STYLES ──────────────────────────────────────────────────────────────────
-
-const PAGE = {
-  maxWidth: 420, margin: "0 auto",
-  fontFamily: "Georgia, 'Times New Roman', serif",
-  background: "#FBF7F4", minHeight: "100vh",
+const ATTACHMENTS = {
+  anxieux:     { label: "Style anxieux",      desc: "Tu aimes profondément mais tu as peur d'être abandonné(e). Tu cherches la validation et tu peux t'accrocher fort. La bonne nouvelle : tu sais aimer avec intensité.", color: "#E8705A" },
+  evitant:     { label: "Style évitant",      desc: "Tu préfères l'indépendance et tu te méfies de la proximité. Tu t'es protégé(e) en gardant de la distance. La bonne nouvelle : tu es capable d'une grande loyauté.", color: "#7A9E8B" },
+  secure:      { label: "Style sécure",       desc: "Tu as une base solide pour aimer. Tu peux être blessé(e) sans remettre en question ta valeur. Continue à faire confiance à ton intuition.", color: "#4A90D9" },
+  desorganise: { label: "Style désorganisé",  desc: "L'amour t'attire et te fait peur à la fois. Tu as vécu des expériences complexes qui t'ont appris à ne plus faire confiance. Le travail sur toi est la clé.", color: "#9B59B6" },
 };
 
-const BTN_PRIMARY = {
-  width: "100%", padding: 18, borderRadius: 14, fontSize: 15,
-  fontFamily: "Georgia, serif", cursor: "pointer",
-  border: "none", background: "#1A0F0A", color: "#FBF7F4",
+const C = {
+  coral:   "#E8705A",
+  dark:    "#C4574A",
+  cream:   "#F5EDE6",
+  creamD:  "#EDD5CC",
+  black:   "#1A1A1A",
+  mid:     "#8B7060",
+  white:   "#FFFFFF",
+  light:   "#FFF0EB",
 };
 
-const BTN_GHOST = {
-  background: "none", border: "none", fontSize: 13,
-  fontFamily: "Georgia, serif", cursor: "pointer",
-  padding: 0, color: "#8B6355", marginBottom: 20, display: "block",
+const BTN = {
+  width:"100%", padding:"16px 24px", borderRadius:14, fontSize:14,
+  fontFamily:"Georgia,serif", cursor:"pointer", border:"none",
+  background:C.black, color:C.white, fontWeight:600,
 };
 
-// ─── APP ─────────────────────────────────────────────────────────────────────
+const BTN_CORAL = {
+  ...BTN, background:C.coral, boxShadow:"0 6px 20px rgba(232,112,90,0.3)",
+};
+
+const CARD = {
+  background:C.white, borderRadius:16, padding:"18px 20px",
+  marginBottom:12, border:"1px solid "+C.creamD, cursor:"pointer",
+};
 
 export default function App() {
-  const [screen, setScreen]       = useState("onboarding");
-  const [dStep, setDStep]         = useState(0);
-  const [dAns, setDAns]           = useState({});
-  const [results, setResults]     = useState(null);
-  const [completed, setCompleted] = useState(new Set());
-  const [exo, setExo]             = useState(null);
-  const [eStep, setEStep]         = useState(0);
-  const [eAns, setEAns]           = useState({});
-  const [analysis, setAnalysis]   = useState(null);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
-  const [finalBilan, setFinalBilan]     = useState(null);
-  const [finalLoading, setFinalLoading] = useState(false);
-  const [msgs, setMsgs]           = useState([
-    { role: "assistant", content: "Je suis là avec toi. Dis-moi où tu en es aujourd'hui — pas besoin de tout expliquer. Juste ce que tu ressens en ce moment." }
-  ]);
-  const [chatIn, setChatIn]       = useState("");
+  const [screen, setScreen]     = useState("onboarding");
+  const [dStep, setDStep]       = useState(0);
+  const [dAns, setDAns]         = useState({});
+  const [results, setResults]   = useState(() => {
+    try { const s = localStorage.getItem("rl_results"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const [completed, setCompleted] = useState(() => {
+    try { const s = localStorage.getItem("rl_completed"); return s ? new Set(JSON.parse(s)) : new Set(); } catch { return new Set(); }
+  });
+  const [curPhase, setCurPhase] = useState(null);
+  const [curExo, setCurExo]     = useState(null);
+  const [eStep, setEStep]       = useState(0);
+  const [eAns, setEAns]         = useState({});
+  const [exoResult, setExoResult] = useState(null);
+  const [exoLoading, setExoLoading] = useState(false);
+  const [bilan, setBilan]       = useState(null);
+  const [bilanLoading, setBilanLoading] = useState(false);
+  const [chatMsgs, setChatMsgs] = useState([]);
+  const [chatIn, setChatIn]     = useState("");
   const [chatLoading, setChatLoading] = useState(false);
-  const chatRef = useRef(null);
-
-  useEffect(() => {
-    chatRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs]);
 
   const totalExos = Object.values(EXOS).flat().length;
-  const progress  = results ? Math.round((completed.size / totalExos) * 100) : 0;
+  const progress  = results ? Math.round(completed.size / totalExos * 100) : 0;
 
-  // Diagnostic
+  function markCompleted(id) {
+    setCompleted(p => {
+      const next = new Set([...p, id]);
+      try { localStorage.setItem("rl_completed", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
+
+  function saveResults(r) {
+    setResults(r);
+    try { localStorage.setItem("rl_results", JSON.stringify(r)); } catch {}
+  }
+
+  function reset() {
+    if (window.confirm("Recommencer depuis le début ?")) {
+      try { localStorage.clear(); } catch {}
+      setResults(null); setCompleted(new Set()); setScreen("onboarding");
+    }
+  }
+
+  // ── DIAGNOSTIC ──────────────────────────────────────────────────────────
   const currQ = DIAG[dStep];
-  const setDA = v => setDAns(p => ({ ...p, [currQ.id]: v }));
-  const dCanNext = () => {
-    const a = dAns[currQ?.id];
-    if (currQ?.type === "scale") return a !== undefined;
-    if (currQ?.type === "multi") return a && a.length > 0;
+
+  function dCanNext() {
+    const a = dAns[dStep];
+    if (!currQ) return false;
+    if (currQ.type === "scale") return a !== undefined;
+    if (currQ.type === "multi") return a && a.length > 0;
+    if (currQ.type === "agree") return a !== undefined;
     return a !== undefined;
-  };
-  const dNext = () => {
-    if (dStep < DIAG.length - 1) {
-      setDStep(s => s + 1);
-    } else {
-      setResults({ attachment: calcAttachment(dAns), phase: calcPhase(dAns) });
-      setScreen("results");
-    }
-  };
+  }
 
-  // Exercise
-  const curStep = exo?.steps[eStep];
-  const curAns  = eAns[eStep];
-  const eCanNext = () => canAnswer(curStep, curAns);
+  function dNext() {
+    if (dStep < DIAG.length - 1) { setDStep(s => s+1); return; }
+    const r = { attachment: calcAttachment(dAns), phase: calcPhase(dAns) };
+    saveResults(r);
+    setScreen("results");
+  }
 
-  const generateAnalysis = async (currentExo, answers) => {
-    setAnalysisLoading(true);
-    setAnalysis(null);
-    // Formater les réponses de l'exercice en texte lisible
-    const lines = currentExo.steps.map((step, i) => {
-      const ans = answers[i];
+  // ── EXERCICE ─────────────────────────────────────────────────────────────
+  function startExo(exo) {
+    setCurExo(exo); setEStep(0); setEAns({}); setExoResult(null); setScreen("exo");
+  }
+
+  const curStep = curExo ? curExo.steps[eStep] : null;
+
+  function canNext() {
+    if (!curStep) return false;
+    if (curStep.type === "coach") return true;
+    const a = eAns[eStep];
+    if (curStep.type === "textarea") return a && a.trim().length > 3;
+    if (curStep.type === "multicheck") return a && a.length > 0;
+    return a !== undefined;
+  }
+
+  async function eNext() {
+    if (eStep < curExo.steps.length - 1) { setEStep(s => s+1); return; }
+    setExoLoading(true);
+    const answers = curExo.steps.map((s,i) => {
+      const a = eAns[i];
+      if (s.type === "coach") return null;
+      if (!a && a !== 0) return null;
       let ansText = "";
-      if (step.type === "scale") ansText = `${ans}/10`;
-      else if (step.type === "qcm" || step.type === "scenario" || step.type === "limit") ansText = step.opts?.[ans] ?? ans;
-      else if (step.type === "multi") ansText = (ans || []).map(idx => step.opts[idx]).join(", ");
-      else if (step.type === "yesno") ansText = ans === true ? "Oui" : "Non";
-      else if (step.type === "agree") ansText = ["Oui, c'est vrai","Plutôt oui","Plutôt non","Non, pas encore"][ans] ?? ans;
-      return `- ${step.q}\n  Réponse : ${ansText}`;
-    }).join("\n");
-
-    const prompt = `Voici les réponses d'une personne à l'exercice "${currentExo.title}" dans une application de développement personnel sur la guérison après une relation difficile.\n\n${lines}\n\nTu es coach spécialisé en guérison émotionnelle et reconstruction de soi. Génère une analyse en JSON avec exactement cette structure :\n{\n  "titre": "Un titre court et percutant (max 6 mots)",\n  "analyse": "2-3 phrases d'analyse profonde et honnête de ce que ces réponses révèlent sur la personne",\n  "force": "1 force ou ressource que tu vois clairement dans ses réponses",\n  "conseil": "1 conseil concret et actionnable pour cette semaine, spécifique à ses réponses",\n  "affirmation": "1 phrase d'affirmation positive pour reconstruire la confiance en soi, directe et percutante"\n}\nRéponds UNIQUEMENT avec le JSON, sans markdown ni texte autour.`;
-
+      if (s.type === "textarea") ansText = a;
+      else if (s.type === "choice" || s.type === "belief") ansText = s.opts[a];
+      else if (s.type === "multicheck") ansText = a.map(x => s.opts[x]).join(", ");
+      else if (s.type === "scale") ansText = a + "/10";
+      return { q: s.q, a: ansText };
+    }).filter(Boolean);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system: "Tu es un coach bienveillant, direct et profond. Tu analyses les réponses des exercices et tu fournis des retours personnalisés, honnêtes et motivants. Tu parles en 'tu'. Tu réponds uniquement en JSON valide.",
-          messages: [{ role: "user", content: prompt }]
-        })
+      const res = await fetch(BACKEND+"/api/analyse", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ exercice: curExo.title, answers })
       });
-      const data = await res.json();
-      const raw = data.content?.[0]?.text || "{}";
-      const cleaned = raw.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      setAnalysis(parsed);
+      const d = await res.json();
+      setExoResult(d);
     } catch {
-      setAnalysis({
-        titre: "Exercice terminé",
-        analyse: "Tu viens de faire un travail important sur toi-même. Chaque réponse honnête est un pas vers la clarté.",
-        force: "Tu as le courage de te regarder en face — c'est rare et précieux.",
-        conseil: "Prends 5 minutes ce soir pour noter ce que cet exercice a soulevé en toi.",
-        affirmation: "Je mérite une relation où je peux être pleinement moi-même."
+      setExoResult({ titre:"Exercice terminé", analyse:"Bravo pour ce travail en profondeur.", force:"Ta persévérance", conseil:"Continue à avancer à ton rythme.", affirmation:"Je suis en chemin vers moi-même." });
+    }
+    markCompleted(curExo.id);
+    setExoLoading(false);
+    setScreen("exo-result");
+  }
+
+  // ── BILAN ────────────────────────────────────────────────────────────────
+  async function loadBilan() {
+    setBilanLoading(true);
+    try {
+      const res = await fetch(BACKEND+"/api/bilan", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ attachment: results?.attachment, phase: results?.phase })
       });
+      const d = await res.json();
+      setBilan(d);
+    } catch {
+      setBilan({ lettre:"Félicitations pour avoir complété ce parcours. Tu as fait un travail remarquable.", profil_ideal:"Quelqu'un qui te respecte et te laisse être toi-même.", compatibilites:["Communication ouverte","Respect mutuel"], incompatibilites:["Manipulation","Manque de respect"], reglages:["Continue à travailler sur tes croyances"] });
     }
-    setAnalysisLoading(false);
-  };
+    setBilanLoading(false);
+    setScreen("bilan");
+  }
 
-  const eNext = () => {
-    if (eStep < exo.steps.length - 1) {
-      setEStep(s => s + 1);
-    } else {
-      const finalAnswers = { ...eAns, [eStep]: curAns };
-      setCompleted(p => new Set([...p, exo.id]));
-      setScreen("exo-result");
-      generateAnalysis(exo, finalAnswers);
-    }
-  };
-
-  // Coach
-  const sendChat = async () => {
+  // ── COACH ────────────────────────────────────────────────────────────────
+  async function sendChat() {
     if (!chatIn.trim() || chatLoading) return;
     const msg = chatIn.trim();
     setChatIn("");
-    const next = [...msgs, { role: "user", content: msg }];
-    setMsgs(next);
+    setChatMsgs(p => [...p, { role:"user", content:msg }]);
     setChatLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system: "Tu es un coach bienveillant et direct spécialisé dans la guérison émotionnelle après des relations difficiles. Chaleureux, jamais complaisant. Tu poses UNE seule question à la fois. Tu parles en 'tu'. Max 4 phrases par réponse. Tu ne juges jamais.",
-          messages: next.map(m => ({ role: m.role, content: m.content }))
-        })
+      const res = await fetch(BACKEND+"/api/coach", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ message:msg, history:chatMsgs, context: results })
       });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || "Je t'entends. Continue…";
-      setMsgs([...next, { role: "assistant", content: text }]);
+      const d = await res.json();
+      setChatMsgs(p => [...p, { role:"assistant", content:d.message||d.response||"..." }]);
     } catch {
-      setMsgs([...next, { role: "assistant", content: "Une erreur s'est produite. Réessaie." }]);
+      setChatMsgs(p => [...p, { role:"assistant", content:"Je suis là. Continue à me parler." }]);
     }
     setChatLoading(false);
-  };
+  }
 
-  const generateFinalBilan = async () => {
-    if (finalBilan) { setScreen("fin-parcours"); return; }
-    setFinalLoading(true);
-    setScreen("fin-parcours");
-    const att = results ? ATTACH[results.attachment]?.label : "non défini";
-    const prompt = `Une personne vient de terminer un parcours complet de guérison émotionnelle (9 exercices sur 3 étapes : Comprendre, Guérir, Construire). Son profil d'attachement : ${att}.\n\nTu es son coach personnel. Génère un bilan final complet en JSON avec exactement cette structure :\n{\n  "titre": "Un titre beau et fort (max 7 mots)",\n  "intro": "2-3 phrases qui reconnaissent le courage accompli",\n  "chemin": "Synthèse des 3 étapes traversées — 2-3 phrases percutantes",\n  "transformation": "La transformation la plus profonde, spécifique au profil d'attachement — 2 phrases",\n  "prete": "3 signes concrets qu'on est prêt(e) pour une vraie relation saine",\n  "lettre": "Lettre courte du coach (5-6 phrases) intime et motivante vers l'amour",\n  "affirmation": "Affirmation finale puissante et courte",\n  "profil_ideal": "Description précise du profil de partenaire idéal pour cette personne selon son attachement — 3-4 phrases détaillées sur le type de personne, ses traits de caractère, son rapport à l'amour",\n  "compatibilites": ["trait compatible 1", "trait compatible 2", "trait compatible 3", "trait compatible 4", "trait compatible 5"],\n  "incompatibles": ["red flag 1 spécifique à ce profil", "red flag 2", "red flag 3", "red flag 4", "red flag 5"],\n  "reglages": [\n    {"titre": "Réglage 1 court", "desc": "Explication de ce sur quoi travailler personnellement pour cette relation"},\n    {"titre": "Réglage 2 court", "desc": "..."},\n    {"titre": "Réglage 3 court", "desc": "..."},\n    {"titre": "Réglage 4 court", "desc": "..."}\n  ]\n}\nRéponds UNIQUEMENT avec le JSON valide, sans markdown ni texte autour.`;
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 2000,
-          system: "Tu es un coach profond, bienveillant et direct spécialisé dans la guérison émotionnelle et la reconstruction de soi. Tu parles en 'tu'. Tu réponds uniquement en JSON valide.",
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const raw = data.content?.[0]?.text || "{}";
-      const cleaned = raw.replace(/```json|```/g, "").trim();
-      setFinalBilan(JSON.parse(cleaned));
-    } catch {
-      setFinalBilan({
-        titre: "Tu as tout traversé.",
-        intro: "Ce que tu viens de faire demande un courage rare. Tu t'es regardé(e) en face, sans te mentir. C'est le plus difficile — et tu l'as fait.",
-        chemin: "Tu as compris ce qui s'est vraiment passé dans cette relation. Tu as traversé la douleur pour en sortir plus libre. Et tu sais maintenant ce que tu veux et ce que tu ne veux plus jamais.",
-        transformation: "Tu n'es plus la même personne qu'au début de ce parcours. Quelque chose s'est remis en place — ta propre valeur, ton droit à être aimé(e) vraiment.",
-        prete: "Tu penses à l'avenir plus qu'au passé. Tu te sens entier·e seul·e. Tu sais dire non à ce qui ne te correspond pas.",
-        lettre: "Je veux que tu saches quelque chose : ce que tu as fait ici est rare. Tu aurais pu fuir, te distraire, recommencer les mêmes schémas. Tu as choisi de comprendre. Tu as choisi de guérir. Et maintenant tu te construis. La relation qui vient — quand elle viendra — te trouvera debout. Prêt·e. Entier·e. Va vers l'amour sans peur. Tu mérites quelqu'un qui te voit vraiment.",
-        affirmation: "Je suis prêt·e à aimer et à être aimé·e pleinement.",
-        profil_ideal: "Tu as besoin de quelqu'un de stable émotionnellement, qui sait ce qu'il·elle ressent et le dit clairement. Une personne présente, fiable, qui ne joue pas avec les silences ni avec les mots. Quelqu'un capable d'intimité sans en avoir peur, et qui te laisse de l'espace sans disparaître.",
-        compatibilites: ["Stabilité émotionnelle et cohérence", "Communication ouverte et directe", "Capacité à s'engager vraiment", "Respect de ton espace et de tes limites", "Humour et légèreté dans le quotidien"],
-        incompatibles: ["Les personnalités soufflant le chaud et le froid", "Les personnes qui fuient l'intimité émotionnelle", "Les relations où tu te demandes tout le temps où tu en es", "Les gens qui minimisent tes émotions", "Les profils qui ont besoin d'être sauvés"],
-        reglages: [
-          { titre: "Ralentir au début", desc: "Ne pas confondre intensité des débuts avec vraie connexion. Laisser le temps à la confiance de se construire." },
-          { titre: "Exprimer tes besoins tôt", desc: "Ne pas attendre que la situation soit insupportable. Dire ce dont tu as besoin dès que tu le ressens." },
-          { titre: "Observer les actes", desc: "Les mots séduisent, les actes révèlent. Accorder autant d'importance à ce que l'autre fait qu'à ce qu'il dit." },
-          { titre: "Rester toi-même", desc: "Ne pas te transformer pour plaire. Si tu dois changer qui tu es pour être aimé·e, ce n'est pas la bonne personne." },
-        ],
-      });
-    }
-    setFinalLoading(false);
-  };
+  // ═══════════════════════════════════════════════════════════════════════
+  // SCREENS
+  // ═══════════════════════════════════════════════════════════════════════
 
-  // ─── ONBOARDING ──────────────────────────────────────────────────────────
+  if (screen === "onboarding") return (
+    <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream, display:"flex", flexDirection:"column" }}>
+      <div style={{ background:C.black, padding:"64px 32px 48px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:"rgba(232,112,90,0.12)" }} />
+        <div style={{ fontSize:10, letterSpacing:4, color:C.coral, textTransform:"uppercase", marginBottom:20, fontWeight:700 }}>Marlène Gasmi · Coach certifiée</div>
+        <h1 style={{ fontFamily:"Georgia,serif", fontSize:46, fontWeight:300, color:"#fff", lineHeight:1.15, margin:"0 0 8px" }}>
+          Comprendre.<br />
+          <span style={{ fontStyle:"italic", color:C.coral }}>Guérir.</span><br />
+          Construire.
+        </h1>
+        <p style={{ fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.8, marginTop:20 }}>
+          Un chemin de transformation pour réparer ce qui a été abîmé — et accueillir l'amour que tu mérites.
+        </p>
+      </div>
+      <div style={{ flex:1, padding:"32px 24px" }}>
+        {[
+          { icon:"◇", title:"Diagnostic précis", desc:"Relation vécue + style d'attachement identifié" },
+          { icon:"◈", title:"Vrais exercices de coaching", desc:"Croyances, valeurs, forces, lettres thérapeutiques" },
+          { icon:"◉", title:"Coach IA personnel", desc:"Disponible à tout moment, bienveillant et direct" },
+        ].map((f,i) => (
+          <div key={i} style={{ display:"flex", gap:16, marginBottom:24, alignItems:"flex-start" }}>
+            <div style={{ width:40, height:40, borderRadius:12, background:C.light, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:C.coral, fontSize:16 }}>{f.icon}</div>
+            <div>
+              <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:500, color:C.black, marginBottom:4 }}>{f.title}</div>
+              <div style={{ fontSize:13, color:C.mid, lineHeight:1.6 }}>{f.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:"0 24px 52px" }}>
+        <button onClick={() => setScreen("diagnostic")} style={BTN_CORAL}>Commencer mon diagnostic</button>
+        <p style={{ textAlign:"center", fontSize:12, color:C.mid, marginTop:12 }}>Confidentiel · Bienveillant · Transformateur</p>
+      </div>
+    </div>
+  );
 
-  if (screen === "onboarding") {
-    return (
-      <div style={{ ...PAGE, display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, padding: "60px 24px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 20 }}>🌱</div>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: "#8B6355", textTransform: "uppercase", marginBottom: 12 }}>ton espace personnel</div>
-          <h1 style={{ fontSize: 30, fontWeight: 400, color: "#1A0F0A", margin: "0 0 16px", lineHeight: 1.3 }}>
-            Comprendre.<br />Guérir.<br />Construire.
-          </h1>
-          <p style={{ fontSize: 14, color: "#8B6355", lineHeight: 1.85, margin: "0 0 28px" }}>
-            Un chemin structuré pour réparer ce qui a été abîmé — et te préparer à la relation que tu mérites vraiment.
-          </p>
-          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-            {[
-              "Un diagnostic précis : relation vécue + style d'attachement",
-              "Des exercices guidés et structurés adaptés à où tu en es",
-              "Un coach IA disponible à tout moment",
-            ].map((t, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, marginBottom: i < 2 ? 10 : 0, alignItems: "flex-start" }}>
-                <div style={{ width: 20, height: 20, borderRadius: 99, background: "#FAF0EC", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                  <span style={{ fontSize: 10, color: "#C4614A" }}>✓</span>
-                </div>
-                <span style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.6 }}>{t}</span>
-              </div>
+  if (screen === "diagnostic") return (
+    <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+      <div style={{ background:C.black, padding:"52px 24px 24px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <button onClick={() => { setDStep(0); setDAns({}); setScreen("onboarding"); }} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", fontSize:13 }}>← Retour</button>
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", letterSpacing:2 }}>{dStep+1}/{DIAG.length}</span>
+        </div>
+        <div style={{ background:"rgba(255,255,255,0.1)", borderRadius:99, height:3 }}>
+          <div style={{ width:`${(dStep+1)/DIAG.length*100}%`, height:"100%", background:C.coral, borderRadius:99, transition:"width 0.4s" }} />
+        </div>
+        <div style={{ fontSize:10, color:C.coral, letterSpacing:2, textTransform:"uppercase", marginTop:16, fontWeight:700 }}>
+          {currQ?.sec === "A" ? "Ta relation passée" : "Ton style d'attachement"}
+        </div>
+      </div>
+      <div style={{ padding:"28px 24px" }}>
+        <h2 style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:400, color:C.black, lineHeight:1.6, marginBottom:28 }}>{currQ?.q}</h2>
+        {currQ?.type === "qcm" || currQ?.type === "choice" ? (
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {currQ.opts.map((opt,i) => (
+              <button key={i} onClick={() => setDAns(p=>({...p,[dStep]:i}))}
+                style={{ padding:"16px 20px", borderRadius:12, fontSize:14, fontFamily:"Georgia,serif", cursor:"pointer", textAlign:"left", lineHeight:1.5, background:dAns[dStep]===i?C.black:C.white, color:dAns[dStep]===i?"#fff":C.black, border:dAns[dStep]===i?"2px solid "+C.black:"1px solid "+C.creamD, display:"flex", alignItems:"center", gap:12 }}>
+                <span style={{ width:20, height:20, borderRadius:"50%", flexShrink:0, background:dAns[dStep]===i?C.coral:"transparent", border:dAns[dStep]===i?"none":"1.5px solid "+C.creamD, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {dAns[dStep]===i && <span style={{ color:"#fff", fontSize:10 }}>✓</span>}
+                </span>
+                {opt}
+              </button>
             ))}
           </div>
-        </div>
-        <div style={{ padding: "0 24px 52px" }}>
-          <button onClick={() => setScreen("diagnostic")} style={BTN_PRIMARY}>
-            Commencer le diagnostic →
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── DIAGNOSTIC ──────────────────────────────────────────────────────────
-
-  if (screen === "diagnostic") {
-    return (
-      <div style={{ ...PAGE, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <div style={{ padding: "48px 24px 0" }}>
-          <button
-            onClick={() => dStep > 0 ? setDStep(s => s - 1) : setScreen("onboarding")}
-            style={BTN_GHOST}
-          >← Retour</button>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-            <div style={{ flex: 1, background: "#E8D5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
-              <div style={{ width: `${((dStep + 1) / DIAG.length) * 100}%`, height: "100%", background: "#C4614A", borderRadius: 99, transition: "width 0.4s" }} />
+        ) : currQ?.type === "scale" ? (
+          <div>
+            <input type="range" min={0} max={10} value={dAns[dStep]??5} onChange={e=>setDAns(p=>({...p,[dStep]:+e.target.value}))} style={{ width:"100%", accentColor:C.coral }} />
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:C.mid, marginTop:8 }}>
+              <span>{currQ.minL}</span><span style={{ fontSize:22, fontFamily:"Georgia,serif", color:C.coral, fontWeight:400 }}>{dAns[dStep]??5}</span><span>{currQ.maxL}</span>
             </div>
-            <span style={{ fontSize: 12, color: "#8B6355", flexShrink: 0 }}>{dStep + 1}/{DIAG.length}</span>
           </div>
-
-          <div style={{ display: "inline-block", padding: "5px 14px", borderRadius: 99, background: currQ.sec === "A" ? "#EFF5F2" : "#FAF0EC", marginBottom: 16 }}>
-            <span style={{ fontSize: 11, color: currQ.sec === "A" ? "#7A9E8B" : "#C4614A", letterSpacing: 1 }}>
-              {currQ.sec === "A" ? "🌱 La relation passée" : "🧠 Style d'attachement"}
-            </span>
+        ) : currQ?.type === "multi" ? (
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {currQ.opts.map((opt,i) => {
+              const sel = (dAns[dStep]||[]).includes(i);
+              return (
+                <button key={i} onClick={() => {
+                  const cur = dAns[dStep]||[];
+                  const next = sel ? cur.filter(x=>x!==i) : cur.length < currQ.max ? [...cur,i] : cur;
+                  setDAns(p=>({...p,[dStep]:next}));
+                }} style={{ padding:"14px 18px", borderRadius:12, fontSize:14, fontFamily:"Georgia,serif", cursor:"pointer", textAlign:"left", background:sel?C.black:C.white, color:sel?"#fff":C.black, border:sel?"2px solid "+C.black:"1px solid "+C.creamD }}>
+                  {opt}
+                </button>
+              );
+            })}
+            <div style={{ fontSize:12, color:C.mid, marginTop:4 }}>Jusqu'à {currQ.max} réponses</div>
           </div>
-
-          {currQ.type === "scenario" && (
-            <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Scénario</div>
-          )}
-
-          <h2 style={{ fontSize: 18, fontWeight: 400, color: "#1A0F0A", lineHeight: 1.6, marginBottom: 24 }}>{currQ.q}</h2>
-
-          {(currQ.type === "qcm" || currQ.type === "scenario") && (
-            <ChoiceList opts={currQ.opts} ans={dAns[currQ.id]} onPick={setDA} />
-          )}
-          {currQ.type === "scale" && (
-            <ScaleInput value={dAns[currQ.id]} onChange={setDA} minL={currQ.minL} maxL={currQ.maxL} />
-          )}
-          {currQ.type === "multi" && (
-            <MultiList step={currQ} ans={dAns[currQ.id]} onPick={setDA} />
-          )}
-        </div>
-
-        <div style={{ flex: 1 }} />
-        <div style={{ padding: "24px 24px 52px" }}>
-          <button
-            onClick={dNext} disabled={!dCanNext()}
-            style={{ ...BTN_PRIMARY, background: dCanNext() ? "#1A0F0A" : "#E8D5CC", color: dCanNext() ? "#FBF7F4" : "#A09090", cursor: dCanNext() ? "pointer" : "default" }}
-          >
-            {dStep < DIAG.length - 1 ? "Question suivante →" : "Voir mes résultats →"}
+        ) : currQ?.type === "agree" ? (
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {["Pas du tout d'accord","Plutôt pas d'accord","Neutre","Plutôt d'accord","Tout à fait d'accord"].map((opt,i) => (
+              <button key={i} onClick={() => setDAns(p=>({...p,[dStep]:i}))}
+                style={{ padding:"14px 18px", borderRadius:12, fontSize:14, fontFamily:"Georgia,serif", cursor:"pointer", background:dAns[dStep]===i?C.black:C.white, color:dAns[dStep]===i?"#fff":C.black, border:dAns[dStep]===i?"2px solid "+C.black:"1px solid "+C.creamD }}>{opt}</button>
+            ))}
+          </div>
+        ) : null}
+        <div style={{ marginTop:32 }}>
+          <button onClick={dNext} disabled={!dCanNext()} style={{ ...BTN, background:dCanNext()?C.black:C.creamD, color:dCanNext()?"#fff":"#A09090", cursor:dCanNext()?"pointer":"default" }}>
+            {dStep < DIAG.length-1 ? "Question suivante →" : "Voir mon profil →"}
           </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ─── RESULTS ─────────────────────────────────────────────────────────────
-
-  if (screen === "results" && results) {
-    const att = ATTACH[results.attachment];
-    const ph  = PHASES.find(p => p.id === results.phase);
+  if (screen === "results") {
+    const att = ATTACHMENTS[results?.attachment] || ATTACHMENTS.secure;
+    const ph  = PHASES.find(p => p.id === results?.phase) || PHASES[0];
     return (
-      <div style={{ ...PAGE, paddingBottom: 60 }}>
-        <div style={{ background: att.bg, padding: "52px 24px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 52 }}>{att.emoji}</div>
-          <div style={{ marginTop: 12, fontSize: 11, letterSpacing: 2, color: att.color, textTransform: "uppercase" }}>Ton profil d'attachement</div>
-          <h2 style={{ fontSize: 24, fontWeight: 400, color: "#1A0F0A", margin: "8px 0 0" }}>{att.label}</h2>
+      <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+        <div style={{ background:C.black, padding:"52px 24px 32px" }}>
+          <div style={{ fontSize:10, letterSpacing:3, color:C.coral, textTransform:"uppercase", marginBottom:16, fontWeight:700 }}>Ton profil</div>
+          <h2 style={{ fontFamily:"Georgia,serif", fontSize:28, fontWeight:300, color:"#fff", marginBottom:8, fontStyle:"italic" }}>{att.label}</h2>
+          <p style={{ fontSize:14, color:"rgba(255,255,255,0.7)", lineHeight:1.8 }}>{att.desc}</p>
         </div>
-        <div style={{ padding: 24 }}>
-          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC", marginBottom: 16 }}>
-            <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.9, margin: 0 }}>{att.desc}</p>
-          </div>
-          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC", marginBottom: 24 }}>
-            <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton point de départ recommandé</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: ph.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{ph.emoji}</div>
+        <div style={{ padding:"24px" }}>
+          <div style={{ background:C.white, borderRadius:16, padding:"20px 24px", border:"2px solid "+C.coral, marginBottom:16 }}>
+            <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:8 }}>★ RECOMMANDÉ POUR TOI</div>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <span style={{ fontSize:28 }}>{ph.emoji}</span>
               <div>
-                <div style={{ fontSize: 16, color: "#1A0F0A" }}>{ph.title}</div>
-                <div style={{ fontSize: 13, color: "#8B6355", marginTop: 3 }}>{ph.sub}</div>
+                <div style={{ fontFamily:"Georgia,serif", fontSize:20, color:C.black, fontWeight:500 }}>{ph.title}</div>
+                <div style={{ fontSize:13, color:C.mid }}>{ph.sub}</div>
               </div>
             </div>
           </div>
-          <button onClick={() => setScreen("home")} style={BTN_PRIMARY}>Commencer mon parcours →</button>
+          <button onClick={() => setScreen("home")} style={BTN_CORAL}>Commencer mon parcours →</button>
         </div>
       </div>
     );
   }
 
-  // ─── HOME ─────────────────────────────────────────────────────────────────
+  if (screen === "home") return (
+    <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream, paddingBottom:80 }}>
+      <div style={{ background:C.black, padding:"52px 24px 28px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"rgba(232,112,90,0.1)" }} />
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+          <div>
+            <div style={{ fontSize:10, letterSpacing:3, color:C.coral, textTransform:"uppercase", fontWeight:700, marginBottom:8 }}>Ton parcours</div>
+            <h1 style={{ fontFamily:"Georgia,serif", fontSize:32, fontWeight:300, color:"#fff", lineHeight:1.2 }}>
+              Bienvenue<span style={{ color:C.coral, fontStyle:"italic" }}>.</span>
+            </h1>
+          </div>
+          <button onClick={reset} style={{ background:"rgba(255,255,255,0.1)", border:"none", fontSize:10, color:"rgba(255,255,255,0.5)", cursor:"pointer", borderRadius:8, padding:"6px 10px", fontFamily:"Georgia,serif", letterSpacing:1 }}>RESET</button>
+        </div>
+        <div style={{ marginTop:24 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>{completed.size} / {totalExos} exercices</span>
+            <span style={{ fontSize:22, fontFamily:"Georgia,serif", color:C.coral }}>{progress}%</span>
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.1)", borderRadius:99, height:4 }}>
+            <div style={{ width:`${progress}%`, height:"100%", background:C.coral, borderRadius:99, transition:"width 0.8s" }} />
+          </div>
+        </div>
+      </div>
+      <div style={{ padding:"28px 24px 0" }}>
+        <div style={{ fontSize:10, letterSpacing:3, color:C.mid, textTransform:"uppercase", fontWeight:700, marginBottom:16 }}>Les 4 étapes</div>
+        {PHASES.map((ph,i) => {
+          const done   = EXOS[ph.id].filter(e => completed.has(e.id)).length;
+          const isReco = results?.phase === ph.id;
+          const isDone = done === EXOS[ph.id].length;
+          return (
+            <div key={ph.id} onClick={() => { setCurPhase(ph.id); setScreen("phase-"+ph.id); }}
+              style={{ background:isDone?C.black:C.white, borderRadius:16, padding:"20px", marginBottom:12, border:isReco?"2px solid "+C.coral:isDone?"none":"1px solid "+C.creamD, cursor:"pointer", display:"flex", alignItems:"center", gap:16, boxShadow:isReco?"0 4px 16px rgba(232,112,90,0.15)":"none" }}>
+              <div style={{ width:52, height:52, borderRadius:14, background:isDone?"rgba(255,255,255,0.1)":C.light, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0 }}>
+                {isDone ? "✓" : ph.emoji}
+              </div>
+              <div style={{ flex:1 }}>
+                {isReco && <div style={{ fontSize:10, color:C.coral, letterSpacing:1.5, marginBottom:4, fontWeight:700 }}>★ RECOMMANDÉ</div>}
+                <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:500, color:isDone?"#fff":C.black, marginBottom:4 }}>{ph.title}</div>
+                <div style={{ fontSize:12, color:isDone?"rgba(255,255,255,0.5)":C.mid }}>{done}/{EXOS[ph.id].length} exercices · {ph.sub}</div>
+              </div>
+              <div style={{ color:isDone?"rgba(255,255,255,0.3)":C.creamD, fontSize:18 }}>›</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding:"20px 24px 0" }}>
+        <button onClick={() => setScreen("coach")} style={{ ...BTN_CORAL, display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+          <span style={{ fontSize:16 }}>◎</span> Parler à ton coach IA
+        </button>
+      </div>
+      {completed.size === totalExos && (
+        <div style={{ margin:"20px 24px 0", background:C.black, borderRadius:16, padding:"20px 24px" }}>
+          <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:8 }}>PARCOURS TERMINÉ</div>
+          <p style={{ fontSize:14, color:"rgba(255,255,255,0.7)", marginBottom:16, lineHeight:1.7 }}>Tu as complété les {totalExos} exercices. Découvre ton bilan personnalisé.</p>
+          <button onClick={loadBilan} style={BTN_CORAL}>Voir mon bilan final →</button>
+        </div>
+      )}
+    </div>
+  );
 
-  if (screen === "home") {
+  if (screen.startsWith("phase-")) {
+    const phId = screen.replace("phase-","");
+    const ph   = PHASES.find(p => p.id === phId);
+    const exos = EXOS[phId] || [];
     return (
-      <div style={{ ...PAGE, paddingBottom: 60 }}>
-        <div style={{ padding: "48px 24px 20px" }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: "#8B6355", textTransform: "uppercase" }}>ton parcours</div>
-          <h1 style={{ fontSize: 28, fontWeight: 400, color: "#1A0F0A", margin: "8px 0 4px" }}>Bienvenue.</h1>
-        </div>
-
-        <div style={{ margin: "0 24px 24px", background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <span style={{ fontSize: 13, color: "#8B6355" }}>Progression globale</span>
-            <span style={{ fontSize: 24, fontWeight: 400, color: "#C4614A" }}>{progress}%</span>
+      <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+        <div style={{ background:C.black, padding:"52px 24px 32px" }}>
+          <button onClick={() => setScreen("home")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", fontSize:13, marginBottom:20 }}>← Retour</button>
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            <span style={{ fontSize:36 }}>{ph?.emoji}</span>
+            <div>
+              <h2 style={{ fontFamily:"Georgia,serif", fontSize:28, fontWeight:300, color:"#fff" }}>{ph?.title}</h2>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)" }}>{ph?.sub}</div>
+            </div>
           </div>
-          <div style={{ background: "#F0E8E4", borderRadius: 99, height: 6, overflow: "hidden" }}>
-            <div style={{ width: `${progress}%`, height: "100%", background: "#C4614A", borderRadius: 99, transition: "width 0.6s" }} />
-          </div>
-          <div style={{ fontSize: 12, color: "#B09080", marginTop: 8 }}>{completed.size} / {totalExos} exercices terminés</div>
         </div>
-
-        <div style={{ padding: "0 24px" }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: "#8B6355", textTransform: "uppercase", marginBottom: 16 }}>Les 3 étapes</div>
-          {PHASES.map((ph, i) => {
-            const done   = EXOS[ph.id].filter(e => completed.has(e.id)).length;
-            const isReco = results?.phase === ph.id;
+        <div style={{ padding:"24px" }}>
+          {exos.map((exo,i) => {
+            const done = completed.has(exo.id);
             return (
-              <div key={ph.id} onClick={() => setScreen("phase-" + ph.id)}
-                style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 12, border: isReco ? `1.5px solid ${ph.color}` : "1px solid #E8D5CC", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: ph.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{ph.emoji}</div>
-                <div style={{ flex: 1 }}>
-                  {isReco && <div style={{ fontSize: 10, color: ph.color, letterSpacing: 1, marginBottom: 3 }}>★ RECOMMANDÉ POUR TOI</div>}
-                  <div style={{ fontSize: 11, color: ph.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Étape {i + 1}</div>
-                  <div style={{ fontSize: 15, color: "#1A0F0A" }}>{ph.title}</div>
-                  <div style={{ fontSize: 12, color: "#8B6355", marginTop: 2 }}>{done}/{EXOS[ph.id].length} exercices</div>
+              <div key={exo.id} onClick={() => startExo(exo)} style={{ ...CARD, opacity:1 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:44, height:44, borderRadius:12, background:done?C.black:C.light, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:done?"#fff":C.coral, fontFamily:"Georgia,serif", fontSize:18, fontWeight:400 }}>
+                    {done ? "✓" : i+1}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontFamily:"Georgia,serif", fontSize:17, color:C.black, marginBottom:4 }}>{exo.title}</div>
+                    <div style={{ fontSize:12, color:C.mid }}>{exo.steps.length} étapes · {done ? "Terminé" : "À faire"}</div>
+                  </div>
+                  <div style={{ color:C.creamD, fontSize:18 }}>›</div>
                 </div>
-                <div style={{ color: "#D0B8AE", fontSize: 20 }}>›</div>
               </div>
             );
           })}
         </div>
+      </div>
+    );
+  }
 
-        <div style={{ padding: "8px 24px 0" }}>
-          <button onClick={() => setScreen("coach")}
-            style={{ ...BTN_PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            💬 Parler au coach IA
-          </button>
+  if (screen === "exo" && curExo) {
+    const step = curExo.steps[eStep];
+    return (
+      <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+        <div style={{ background:C.black, padding:"52px 24px 24px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+            <button onClick={() => setScreen("phase-"+curPhase)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", fontSize:13 }}>← Retour</button>
+            <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", letterSpacing:2 }}>{eStep+1}/{curExo.steps.length}</span>
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.1)", borderRadius:99, height:3 }}>
+            <div style={{ width:`${(eStep+1)/curExo.steps.length*100}%`, height:"100%", background:C.coral, borderRadius:99, transition:"width 0.4s" }} />
+          </div>
+          <h3 style={{ fontFamily:"Georgia,serif", fontSize:16, fontWeight:300, color:"rgba(255,255,255,0.7)", marginTop:16 }}>{curExo.title}</h3>
         </div>
-
-        {completed.size === totalExos && (
-          <div style={{ margin: "16px 24px 0", background: "linear-gradient(135deg, #1A0F0A 0%, #3A1F14 100%)", borderRadius: 16, padding: "24px", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🌸</div>
-            <div style={{ fontSize: 11, color: "#D4944A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Parcours complet</div>
-            <div style={{ fontSize: 18, color: "#FBF7F4", fontWeight: 400, marginBottom: 8, lineHeight: 1.4 }}>Tu as tout traversé.</div>
-            <div style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.7, marginBottom: 20 }}>Ton bilan final et la lettre de ton coach t'attendent.</div>
-            <button onClick={generateFinalBilan} style={{ background: "#D4944A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
-              Voir mon bilan final →
+        <div style={{ padding:"24px" }}>
+          {eStep === 0 && (
+            <div style={{ background:C.white, borderRadius:12, padding:"16px 20px", marginBottom:20, border:"1px solid "+C.creamD }}>
+              <p style={{ fontSize:13, color:C.mid, lineHeight:1.8, fontStyle:"italic" }}>{curExo.intro}</p>
+            </div>
+          )}
+          {step.type === "coach" ? (
+            <div style={{ background:C.light, borderRadius:16, padding:"20px 24px", borderLeft:"3px solid "+C.coral }}>
+              <div style={{ fontSize:11, color:C.coral, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Ton coach</div>
+              <p style={{ fontSize:15, color:C.black, lineHeight:1.9, margin:0, fontStyle:"italic" }}>{step.text}</p>
+            </div>
+          ) : step.type === "textarea" ? (
+            <div>
+              <h3 style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:400, color:C.black, lineHeight:1.6, marginBottom:20 }}>{step.q}</h3>
+              <textarea value={eAns[eStep]||""} onChange={e=>setEAns(p=>({...p,[eStep]:e.target.value}))}
+                placeholder="Écris ici, librement et honnêtement..." rows={6}
+                style={{ width:"100%", background:C.white, border:"1px solid "+C.creamD, borderRadius:12, padding:"16px", fontSize:14, fontFamily:"Georgia,serif", color:C.black, resize:"none", lineHeight:1.8, boxSizing:"border-box", outline:"none" }} />
+            </div>
+          ) : step.type === "choice" || step.type === "belief" ? (
+            <div>
+              <h3 style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:400, color:C.black, lineHeight:1.6, marginBottom:20 }}>{step.q}</h3>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {step.opts.map((opt,i) => (
+                  <button key={i} onClick={() => setEAns(p=>({...p,[eStep]:i}))}
+                    style={{ padding:"16px 20px", borderRadius:12, fontSize:14, fontFamily:"Georgia,serif", cursor:"pointer", textAlign:"left", lineHeight:1.5, background:eAns[eStep]===i?C.black:C.white, color:eAns[eStep]===i?"#fff":C.black, border:eAns[eStep]===i?"2px solid "+C.black:"1px solid "+C.creamD, display:"flex", alignItems:"center", gap:12 }}>
+                    <span style={{ width:20, height:20, borderRadius:"50%", flexShrink:0, background:eAns[eStep]===i?C.coral:"transparent", border:eAns[eStep]===i?"none":"1.5px solid "+C.creamD, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {eAns[eStep]===i && <span style={{ color:"#fff", fontSize:10 }}>✓</span>}
+                    </span>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : step.type === "multicheck" ? (
+            <div>
+              <h3 style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:400, color:C.black, lineHeight:1.6, marginBottom:20 }}>{step.q}</h3>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {step.opts.map((opt,i) => {
+                  const sel = (eAns[eStep]||[]).includes(i);
+                  return (
+                    <button key={i} onClick={() => {
+                      const cur = eAns[eStep]||[];
+                      const next = sel ? cur.filter(x=>x!==i) : cur.length < step.max ? [...cur,i] : cur;
+                      setEAns(p=>({...p,[eStep]:next}));
+                    }} style={{ padding:"14px 18px", borderRadius:12, fontSize:14, fontFamily:"Georgia,serif", cursor:"pointer", textAlign:"left", background:sel?C.black:C.white, color:sel?"#fff":C.black, border:sel?"2px solid "+C.black:"1px solid "+C.creamD }}>
+                      {opt}
+                    </button>
+                  );
+                })}
+                <div style={{ fontSize:12, color:C.mid, marginTop:4 }}>Jusqu'à {step.max} réponses</div>
+              </div>
+            </div>
+          ) : null}
+          <div style={{ marginTop:32 }}>
+            <button onClick={eNext} disabled={!canNext()||exoLoading}
+              style={{ ...BTN, background:canNext()&&!exoLoading?C.black:C.creamD, color:canNext()&&!exoLoading?"#fff":"#A09090", cursor:canNext()&&!exoLoading?"pointer":"default" }}>
+              {exoLoading ? "Analyse en cours..." : eStep < curExo.steps.length-1 ? (step.type==="coach"?"J'ai lu →":"Étape suivante →") : "Terminer l'exercice ✓"}
             </button>
           </div>
-        )}
-      </div>
-    );
-  }
-
-  // ─── PHASE ────────────────────────────────────────────────────────────────
-
-  const activePhase = PHASES.find(p => screen === "phase-" + p.id);
-  if (activePhase) {
-    return (
-      <div style={{ ...PAGE, paddingBottom: 60 }}>
-        <div style={{ background: activePhase.bg, padding: "48px 24px 32px" }}>
-          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: activePhase.color }}>← Retour</button>
-          <div style={{ fontSize: 36 }}>{activePhase.emoji}</div>
-          <h2 style={{ fontSize: 26, fontWeight: 400, color: "#1A0F0A", margin: "12px 0 8px" }}>{activePhase.title}</h2>
-          <p style={{ fontSize: 14, color: "#8B6355", margin: 0 }}>{activePhase.sub}</p>
-        </div>
-        <div style={{ padding: 24 }}>
-          {EXOS[activePhase.id].map(ex => {
-            const done = completed.has(ex.id);
-            return (
-              <div key={ex.id} onClick={() => { setExo(ex); setEStep(0); setEAns({}); setScreen("exercise"); }}
-                style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 12, border: done ? `1.5px solid ${activePhase.color}` : "1px solid #E8D5CC", cursor: "pointer" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 99, background: done ? activePhase.color : "#F0E8E4", border: done ? "none" : "1.5px solid #D0B8AE", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
-                    {done && <span style={{ color: "#fff", fontSize: 11 }}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 15, color: "#1A0F0A", marginBottom: 4 }}>{ex.title}</div>
-                    <div style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.6 }}>{ex.intro.substring(0, 75)}…</div>
-                    <div style={{ fontSize: 12, color: activePhase.color, marginTop: 6 }}>{ex.steps.length} étapes</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     );
   }
 
-  // ─── EXERCISE ─────────────────────────────────────────────────────────────
-
-  if (screen === "exercise" && exo) {
-    const pId    = findPhaseId(exo.id);
-    const ph     = PHASES.find(p => p.id === pId);
-    const phColor = ph?.color || "#C4614A";
-    return (
-      <div style={{ ...PAGE, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <div style={{ padding: "48px 24px 0" }}>
-          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>
-            ← {exo.title}
-          </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, background: "#E8D5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
-              <div style={{ width: `${(eStep / exo.steps.length) * 100}%`, height: "100%", background: phColor, borderRadius: 99, transition: "width 0.4s" }} />
-            </div>
-            <span style={{ fontSize: 12, color: "#8B6355", flexShrink: 0 }}>{eStep + 1}/{exo.steps.length}</span>
+  if (screen === "exo-result" && exoResult) return (
+    <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+      <div style={{ background:C.black, padding:"52px 24px 32px" }}>
+        <div style={{ fontSize:10, color:C.coral, letterSpacing:3, fontWeight:700, marginBottom:12 }}>ANALYSE PERSONNALISÉE</div>
+        <h2 style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:300, color:"#fff", fontStyle:"italic" }}>{exoResult.titre}</h2>
+      </div>
+      <div style={{ padding:"24px" }}>
+        {[
+          { label:"Analyse", content:exoResult.analyse },
+          { label:"Ta force", content:exoResult.force },
+          { label:"Un conseil", content:exoResult.conseil },
+        ].map((item,i) => (
+          <div key={i} style={{ background:C.white, borderRadius:16, padding:"20px 24px", marginBottom:12, border:"1px solid "+C.creamD }}>
+            <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:8 }}>{item.label.toUpperCase()}</div>
+            <p style={{ fontSize:14, color:C.black, lineHeight:1.8, margin:0 }}>{item.content}</p>
           </div>
-          {eStep === 0 && (
-            <div style={{ background: "#FAF9F7", borderRadius: 12, padding: "14px 18px", marginBottom: 20, borderLeft: `3px solid ${phColor}` }}>
-              <p style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.7, margin: 0 }}>{exo.intro}</p>
+        ))}
+        {exoResult.affirmation && (
+          <div style={{ background:C.black, borderRadius:16, padding:"20px 24px", marginBottom:20 }}>
+            <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:8 }}>TON AFFIRMATION</div>
+            <p style={{ fontFamily:"Georgia,serif", fontSize:16, color:"#fff", lineHeight:1.8, margin:0, fontStyle:"italic" }}>{exoResult.affirmation}</p>
+          </div>
+        )}
+        <button onClick={() => setScreen("phase-"+curPhase)} style={BTN_CORAL}>Retour au parcours →</button>
+      </div>
+    </div>
+  );
+
+  if (screen === "bilan") return (
+    <div style={{ maxWidth:430, margin:"0 auto", minHeight:"100vh", background:C.cream }}>
+      <div style={{ background:C.black, padding:"52px 24px 32px" }}>
+        <div style={{ fontSize:10, color:C.coral, letterSpacing:3, fontWeight:700, marginBottom:12 }}>TON BILAN FINAL</div>
+        <h2 style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:300, color:"#fff" }}>
+          {bilanLoading ? "Génération en cours..." : "Ton parcours complet"}
+        </h2>
+      </div>
+      {bilanLoading ? (
+        <div style={{ padding:"48px 24px", textAlign:"center", color:C.mid }}>Analyse de ton parcours...</div>
+      ) : bilan && (
+        <div style={{ padding:"24px" }}>
+          <div style={{ background:C.black, borderRadius:16, padding:"24px", marginBottom:16 }}>
+            <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:12 }}>MESSAGE DE TON COACH</div>
+            <p style={{ fontFamily:"Georgia,serif", fontSize:15, color:"rgba(255,255,255,0.85)", lineHeight:1.9, fontStyle:"italic" }}>{bilan.lettre}</p>
+          </div>
+          {bilan.profil_ideal && (
+            <div style={{ background:C.white, borderRadius:16, padding:"20px 24px", marginBottom:12, border:"1px solid "+C.creamD }}>
+              <div style={{ fontSize:10, color:C.coral, letterSpacing:2, fontWeight:700, marginBottom:8 }}>TON PROFIL IDÉAL</div>
+              <p style={{ fontSize:14, color:C.black, lineHeight:1.8 }}>{bilan.profil_ideal}</p>
             </div>
           )}
-          <h3 style={{ fontSize: 17, fontWeight: 400, color: "#1A0F0A", lineHeight: 1.65, marginBottom: 24 }}>{curStep?.q}</h3>
-          <StepView step={curStep} ans={curAns} setAns={v => setEAns(p => ({ ...p, [eStep]: v }))} />
+          <button onClick={() => setScreen("home")} style={{ ...BTN, marginTop:8 }}>Retour à mon parcours</button>
         </div>
-        <div style={{ flex: 1 }} />
-        <div style={{ padding: "24px 24px 52px" }}>
-          <button
-            onClick={eNext} disabled={!eCanNext()}
-            style={{ ...BTN_PRIMARY, background: eCanNext() ? phColor : "#E8D5CC", color: eCanNext() ? "#fff" : "#A09090", cursor: eCanNext() ? "pointer" : "default" }}
-          >
-            {eStep < exo.steps.length - 1 ? "Étape suivante →" : "Terminer l'exercice ✓"}
-          </button>
-        </div>
+      )}
+    </div>
+  );
+
+  if (screen === "coach") return (
+    <div style={{ maxWidth:430, margin:"0 auto", height:"100vh", background:C.cream, display:"flex", flexDirection:"column" }}>
+      <div style={{ background:C.black, padding:"52px 24px 24px", flexShrink:0 }}>
+        <button onClick={() => setScreen("home")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", fontSize:13, marginBottom:12 }}>← Retour</button>
+        <h2 style={{ fontFamily:"Georgia,serif", fontSize:24, fontWeight:300, color:"#fff" }}>Ton coach IA</h2>
+        <p style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>Disponible à tout moment pour toi</p>
       </div>
-    );
-  }
-
-  // ─── EXO RESULT ───────────────────────────────────────────────────────────
-
-  if (screen === "exo-result" && exo) {
-    const pId = findPhaseId(exo.id);
-    const ph  = PHASES.find(p => p.id === pId);
-    const phColor = ph?.color || "#C4614A";
-    return (
-      <div style={{ ...PAGE, paddingBottom: 60 }}>
-        <div style={{ padding: "48px 24px 24px" }}>
-          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>← Retour</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: ph?.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{ph?.emoji}</div>
-            <div>
-              <div style={{ fontSize: 11, color: phColor, letterSpacing: 1, textTransform: "uppercase" }}>Exercice complété</div>
-              <div style={{ fontSize: 17, color: "#1A0F0A" }}>{exo.title}</div>
-            </div>
-          </div>
-        </div>
-
-        {analysisLoading && (
-          <div style={{ margin: "0 24px", background: "#fff", borderRadius: 16, padding: "32px 24px", border: "1px solid #E8D5CC", textAlign: "center" }}>
-            <div style={{ fontSize: 28, marginBottom: 16 }}>🌿</div>
-            <div style={{ fontSize: 14, color: "#8B6355", lineHeight: 1.8 }}>
-              Ton coach analyse tes réponses…
-            </div>
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "center", gap: 6 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ width: 8, height: 8, borderRadius: 99, background: phColor, opacity: 0.4, animation: `pulse ${0.8 + i * 0.2}s ease-in-out infinite` }} />
-              ))}
-            </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", display:"flex", flexDirection:"column", gap:12 }}>
+        {chatMsgs.length === 0 && (
+          <div style={{ background:C.white, border:"1px solid "+C.creamD, borderRadius:"16px 16px 16px 4px", padding:"16px 20px", maxWidth:"84%" }}>
+            <p style={{ fontSize:14, color:C.black, lineHeight:1.85, margin:0 }}>Bonjour. Je suis ton coach IA. Je suis là pour t'accompagner dans ce chemin de transformation. Qu'est-ce que tu as envie de partager ou d'explorer aujourd'hui ?</p>
           </div>
         )}
-
-        {analysis && !analysisLoading && (
-          <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Titre + Analyse */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: phColor, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Ce que tes réponses révèlent</div>
-              <div style={{ fontSize: 18, fontWeight: 400, color: "#1A0F0A", marginBottom: 14, lineHeight: 1.4 }}>{analysis.titre}</div>
-              <p style={{ fontSize: 14, color: "#3A2820", lineHeight: 1.9, margin: 0 }}>{analysis.analyse}</p>
+        {chatMsgs.map((m,i) => (
+          <div key={i} style={{ display:"flex", justifyContent:m.role==="user"?"flex-end":"flex-start" }}>
+            <div style={{ maxWidth:"84%", fontSize:14, lineHeight:1.85, padding:"16px 20px", background:m.role==="user"?C.coral:C.white, color:m.role==="user"?"#fff":C.black, border:m.role==="assistant"?"1px solid "+C.creamD:"none", borderRadius:m.role==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px", boxShadow:m.role==="user"?"0 4px 12px rgba(232,112,90,0.25)":"none" }}>
+              {m.content}
             </div>
-
-            {/* Force */}
-            <div style={{ background: ph?.bg || "#EFF5F2", borderRadius: 16, padding: "20px 24px", border: `1px solid ${phColor}22` }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>💪</div>
-                <div>
-                  <div style={{ fontSize: 11, color: phColor, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta force visible</div>
-                  <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.8, margin: 0 }}>{analysis.force}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Conseil */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>🎯</div>
-                <div>
-                  <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ton conseil pour cette semaine</div>
-                  <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.8, margin: 0 }}>{analysis.conseil}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Affirmation */}
-            <div style={{ background: "#1A0F0A", borderRadius: 16, padding: "24px", textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton affirmation du jour</div>
-              <p style={{ fontSize: 17, color: "#FBF7F4", lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>"{analysis.affirmation}"</p>
-            </div>
-
           </div>
-        )}
-
-        <div style={{ padding: "24px 24px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_PRIMARY}>
-            Continuer le parcours
-          </button>
-          <button onClick={() => { setExo(null); setScreen("coach"); }}
-            style={{ ...BTN_PRIMARY, background: "transparent", border: "1px solid #E8D5CC", color: "#8B6355" }}>
-            En parler au coach IA
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── FIN DU PARCOURS ──────────────────────────────────────────────────────
-
-  if (screen === "fin-parcours") {
-    return (
-      <div style={{ ...PAGE, paddingBottom: 80 }}>
-        <div style={{ background: "#1A0F0A", padding: "52px 24px 40px", textAlign: "center" }}>
-          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: "#8B6355", marginBottom: 28 }}>← Retour</button>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
-          <div style={{ fontSize: 11, color: "#D4944A", letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>Bilan final</div>
-          {finalLoading ? (
-            <div style={{ fontSize: 16, color: "#FBF7F4", lineHeight: 1.6 }}>Ton coach prépare ton bilan…</div>
-          ) : finalBilan ? (
-            <h2 style={{ fontSize: 26, fontWeight: 400, color: "#FBF7F4", margin: 0, lineHeight: 1.3 }}>{finalBilan.titre}</h2>
-          ) : null}
-        </div>
-
-        {finalLoading && (
-          <div style={{ padding: "40px 24px", textAlign: "center" }}>
-            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 16 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ width: 10, height: 10, borderRadius: 99, background: "#D4944A", opacity: 0.4 }} />
-              ))}
-            </div>
-            <p style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.8 }}>Quelques instants…<br />Ton coach lit tout ce que tu as traversé.</p>
-          </div>
-        )}
-
-        {finalBilan && !finalLoading && (
-          <div style={{ padding: "28px 24px 0", display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Intro */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Ce que tu as accompli</div>
-              <p style={{ fontSize: 15, color: "#1A0F0A", lineHeight: 1.9, margin: "0 0 14px" }}>{finalBilan.intro}</p>
-              <p style={{ fontSize: 14, color: "#3A2820", lineHeight: 1.9, margin: 0 }}>{finalBilan.chemin}</p>
-            </div>
-
-            {/* Transformation */}
-            <div style={{ background: "#FDF5EC", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>🦋</div>
-                <div>
-                  <div style={{ fontSize: 11, color: "#D4944A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta transformation</div>
-                  <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.85, margin: 0 }}>{finalBilan.transformation}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Signes que tu es prêt(e) */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#7A9E8B", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>🌱 Tu es prêt·e quand…</div>
-              <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.9, margin: 0 }}>{finalBilan.prete}</p>
-            </div>
-
-            {/* Lettre du coach */}
-            <div style={{ background: "#FAF0EC", borderRadius: 16, padding: "24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#C4614A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>💌 La lettre de ton coach</div>
-              <p style={{ fontSize: 15, color: "#1A0F0A", lineHeight: 2, margin: 0, fontStyle: "italic" }}>{finalBilan.lettre}</p>
-            </div>
-
-            {/* Affirmation finale */}
-            <div style={{ background: "#1A0F0A", borderRadius: 16, padding: "24px", textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#D4944A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Ton affirmation pour l'amour</div>
-              <p style={{ fontSize: 18, color: "#FBF7F4", lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>"{finalBilan.affirmation}"</p>
-            </div>
-
-            {/* ─── SECTION POUR ALLER PLUS LOIN ─── */}
-            <div style={{ marginTop: 8, padding: "20px 0 0" }}>
-              <div style={{ fontSize: 11, letterSpacing: 3, color: "#8B6355", textTransform: "uppercase", marginBottom: 6 }}>Pour aller plus loin</div>
-              <h3 style={{ fontSize: 22, fontWeight: 400, color: "#1A0F0A", margin: "0 0 20px", lineHeight: 1.3 }}>Ton prochain partenaire idéal</h3>
-            </div>
-
-            {/* Profil idéal */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1.5px solid #D4944A" }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>💛</div>
-                <div>
-                  <div style={{ fontSize: 11, color: "#D4944A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Le profil fait pour toi</div>
-                  <p style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.9, margin: 0 }}>{finalBilan.profil_ideal}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Compatibilités */}
-            <div style={{ background: "#EFF5F2", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#7A9E8B", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>✓ Ce qui est compatible avec toi</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(finalBilan.compatibilites || []).map((item, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 22, height: 22, borderRadius: 99, background: "#7A9E8B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                      <span style={{ color: "#fff", fontSize: 11 }}>✓</span>
-                    </div>
-                    <span style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.6 }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Incompatibles */}
-            <div style={{ background: "#FAF0EC", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#C4614A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>⚠ Ce qui ne fonctionne pas avec toi</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(finalBilan.incompatibles || []).map((item, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 22, height: 22, borderRadius: 99, background: "#C4614A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                      <span style={{ color: "#fff", fontSize: 13, lineHeight: 1 }}>✕</span>
-                    </div>
-                    <span style={{ fontSize: 14, color: "#1A0F0A", lineHeight: 1.6 }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Réglages personnels */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #E8D5CC" }}>
-              <div style={{ fontSize: 11, color: "#8B6355", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>⚙ Tes réglages pour la prochaine relation</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {(finalBilan.reglages || []).map((r, i) => (
-                  <div key={i} style={{ paddingLeft: 14, borderLeft: "3px solid #E8D5CC" }}>
-                    <div style={{ fontSize: 14, color: "#1A0F0A", fontWeight: 500, marginBottom: 4 }}>{r.titre}</div>
-                    <div style={{ fontSize: 13, color: "#8B6355", lineHeight: 1.7 }}>{r.desc}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* CTA final */}
-            <div style={{ background: "#1A0F0A", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🌸</div>
-              <p style={{ fontSize: 15, color: "#FBF7F4", lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{finalBilan.affirmation}"</p>
-              <button onClick={() => setScreen("coach")} style={{ background: "#D4944A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
-                Parler au coach IA 💬
-              </button>
-            </div>
-
-          </div>
+        ))}
+        {chatLoading && (
+          <div style={{ background:C.white, border:"1px solid "+C.creamD, borderRadius:"16px 16px 16px 4px", padding:"16px 20px", color:C.coral, letterSpacing:4, fontSize:20 }}>···</div>
         )}
       </div>
-    );
-  }
-
-  // ─── COACH ────────────────────────────────────────────────────────────────
-
-  if (screen === "coach") {
-    return (
-      <div style={{ ...PAGE, display: "flex", flexDirection: "column", height: "100vh" }}>
-        <div style={{ padding: "48px 24px 16px", borderBottom: "1px solid #E8D5CC", background: "#fff", flexShrink: 0 }}>
-          <button onClick={() => setScreen("home")} style={BTN_GHOST}>← Retour</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 99, background: "#EFF5F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
-            <div>
-              <div style={{ fontSize: 15, color: "#1A0F0A" }}>Coach</div>
-              <div style={{ fontSize: 12, color: "#8B6355" }}>IA · disponible maintenant</div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, padding: "20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
-          {msgs.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "82%", fontSize: 14, lineHeight: 1.85, padding: "14px 18px",
-                background: m.role === "user" ? "#1A0F0A" : "#fff",
-                color: m.role === "user" ? "#FBF7F4" : "#1A0F0A",
-                border: m.role === "assistant" ? "1px solid #E8D5CC" : "none",
-                borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-              }}>{m.content}</div>
-            </div>
-          ))}
-          {chatLoading && (
-            <div style={{ display: "flex" }}>
-              <div style={{ background: "#fff", border: "1px solid #E8D5CC", borderRadius: "16px 16px 16px 4px", padding: "14px 18px", color: "#8B6355", letterSpacing: 4 }}>···</div>
-            </div>
-          )}
-          <div ref={chatRef} />
-        </div>
-
-        <div style={{ padding: "16px 24px 36px", background: "#fff", borderTop: "1px solid #E8D5CC", flexShrink: 0 }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-            <textarea
-              value={chatIn}
-              onChange={e => setChatIn(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
-              placeholder="Écris ce que tu ressens…"
-              rows={2}
-              style={{ flex: 1, background: "#F5EDE7", border: "1px solid #E8D5CC", borderRadius: 12, padding: "12px 16px", fontSize: 14, fontFamily: "Georgia, serif", resize: "none", outline: "none", color: "#1A0F0A", lineHeight: 1.6 }}
-            />
-            <button
-              onClick={sendChat}
-              disabled={chatLoading || !chatIn.trim()}
-              style={{ background: "#C4614A", color: "#fff", border: "none", borderRadius: 12, width: 44, height: 44, fontSize: 18, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: (!chatIn.trim() || chatLoading) ? 0.4 : 1 }}
-            >↑</button>
-          </div>
-        </div>
+      <div style={{ padding:"12px 16px 32px", borderTop:"1px solid "+C.creamD, background:C.white, display:"flex", gap:10, flexShrink:0 }}>
+        <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendChat()}
+          placeholder="Écris ton message..." style={{ flex:1, background:C.cream, border:"1px solid "+C.creamD, borderRadius:24, padding:"12px 18px", fontSize:14, fontFamily:"Georgia,serif", outline:"none", color:C.black }} />
+        <button onClick={sendChat} disabled={!chatIn.trim()||chatLoading}
+          style={{ width:44, height:44, borderRadius:"50%", border:"none", background:(!chatIn.trim()||chatLoading)?C.creamD:C.coral, color:"#fff", fontSize:18, cursor:(!chatIn.trim()||chatLoading)?"default":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:(!chatIn.trim()||chatLoading)?0.4:1 }}>
+          ↑
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
   return null;
 }
