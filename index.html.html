@@ -22,14 +22,14 @@
       --font-body: 'Lato', sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--cream); font-family: var(--font-body); }
+    body { background: #F5EDE6; font-family: 'Lato', sans-serif; }
     #root { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; }
-    input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; border-radius: 99px; background: var(--cream-dark); outline: none; cursor: pointer; width: 100%; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--coral); cursor: pointer; box-shadow: 0 2px 8px rgba(232,112,90,0.4); }
-    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--coral); cursor: pointer; border: none; }
-    button { font-family: var(--font-body); transition: all 0.2s ease; }
+    input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; border-radius: 99px; background: #EDD5CC; outline: none; cursor: pointer; width: 100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #E8705A; cursor: pointer; box-shadow: 0 2px 8px rgba(232,112,90,0.4); }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #E8705A; cursor: pointer; border: none; }
+    button { font-family: 'Lato', sans-serif; transition: all 0.2s ease; }
     button:active { transform: scale(0.97); }
-    textarea, input { font-family: var(--font-body); }
+    textarea, input { font-family: 'Lato', sans-serif; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -38,7 +38,7 @@
     .fade-up-2 { animation: fadeUp 0.5s 0.2s ease both; }
     .fade-up-3 { animation: fadeUp 0.5s 0.3s ease both; }
     .fade-up-4 { animation: fadeUp 0.5s 0.4s ease both; }
-    .dot-pulse span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); margin: 0 3px; }
+    .dot-pulse span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #E8705A; margin: 0 3px; }
     .dot-pulse span:nth-child(1) { animation: pulse 1.2s 0s ease-in-out infinite; }
     .dot-pulse span:nth-child(2) { animation: pulse 1.2s 0.2s ease-in-out infinite; }
     .dot-pulse span:nth-child(3) { animation: pulse 1.2s 0.4s ease-in-out infinite; }
@@ -665,18 +665,18 @@ function App() {
 
   if (screen === "onboarding") {
     return (
-      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--cream)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#F5EDE6", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Hero */}
-        <div style={{ background: "var(--dark)", padding: "64px 32px 48px", position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "#1A1A1A", padding: "64px 32px 48px", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(232,112,90,0.12)" }} />
           <div style={{ position: "absolute", bottom: -40, left: -40, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,112,90,0.08)" }} />
-          <div className="fade-up" style={{ fontSize: 11, letterSpacing: 4, color: "var(--coral)", textTransform: "uppercase", marginBottom: 20, fontFamily: "var(--font-body)", fontWeight: 700 }}>Marlène Gasmi · Coach certifiée</div>
-          <h1 className="fade-up-1" style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 300, color: "#fff", lineHeight: 1.15, margin: "0 0 8px" }}>
+          <div  style={{ fontSize: 11, letterSpacing: 4, color: "#E8705A", textTransform: "uppercase", marginBottom: 20, fontFamily: "'Lato', sans-serif", fontWeight: 700 }}>Marlène Gasmi · Coach certifiée</div>
+          <h1  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 48, fontWeight: 300, color: "#fff", lineHeight: 1.15, margin: "0 0 8px" }}>
             Comprendre.<br />
-            <span style={{ fontStyle: "italic", color: "var(--coral)" }}>Guérir.</span><br />
+            <span style={{ fontStyle: "italic", color: "#E8705A" }}>Guérir.</span><br />
             Construire.
           </h1>
-          <p className="fade-up-2" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginTop: 20, fontWeight: 300 }}>
+          <p  style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginTop: 20, fontWeight: 300 }}>
             Un chemin de transformation pour réparer ce qui a été abîmé — et accueillir l'amour que tu mérites.
           </p>
         </div>
@@ -689,10 +689,10 @@ function App() {
             { icon: "◉", title: "Coach IA personnel", desc: "Disponible à tout moment, bienveillant et direct" },
           ].map((f, i) => (
             <div key={i} className={`fade-up-${i+2}`} style={{ display: "flex", gap: 16, marginBottom: 24, alignItems: "flex-start" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--coral-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--coral)", fontSize: 16 }}>{f.icon}</div>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "#FFF0EB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#E8705A", fontSize: 16 }}>{f.icon}</div>
               <div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 500, color: "var(--dark)", marginBottom: 4 }}>{f.title}</div>
-                <div style={{ fontSize: 13, color: "var(--mid)", lineHeight: 1.6, fontWeight: 300 }}>{f.desc}</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 18, fontWeight: 500, color: "#1A1A1A", marginBottom: 4 }}>{f.title}</div>
+                <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6, fontWeight: 300 }}>{f.desc}</div>
               </div>
             </div>
           ))}
@@ -701,10 +701,10 @@ function App() {
         {/* CTA */}
         <div style={{ padding: "0 24px 52px" }}>
           <button onClick={() => setScreen("diagnostic")}
-            style={{ width: "100%", padding: "18px", borderRadius: 14, fontSize: 14, fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", border: "none", background: "var(--coral)", color: "#fff", boxShadow: "0 8px 24px rgba(232,112,90,0.35)" }}>
+            style={{ width: "100%", padding: "18px", borderRadius: 14, fontSize: 14, fontFamily: "'Lato', sans-serif", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", border: "none", background: "#E8705A", color: "#fff", boxShadow: "0 8px 24px rgba(232,112,90,0.35)" }}>
             Commencer mon diagnostic
           </button>
-          <p style={{ textAlign: "center", fontSize: 12, color: "var(--mid)", marginTop: 12, fontWeight: 300 }}>Confidentiel · Bienveillant · Transformateur</p>
+          <p style={{ textAlign: "center", fontSize: 12, color: "#8B7060", marginTop: 12, fontWeight: 300 }}>Confidentiel · Bienveillant · Transformateur</p>
         </div>
       </div>
     );
@@ -738,7 +738,7 @@ function App() {
             <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Scénario</div>
           )}
 
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, color: "var(--dark)", lineHeight: 1.55, marginBottom: 28 }}>{currQ.q}</h2>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.55, marginBottom: 28 }}>{currQ.q}</h2>
 
           {(currQ.type === "qcm" || currQ.type === "scenario") && (
             <ChoiceList opts={currQ.opts} ans={dAns[currQ.id]} onPick={setDA} />
@@ -774,7 +774,7 @@ function App() {
         <div style={{ background: att.bg, padding: "52px 24px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 52 }}>{att.emoji}</div>
           <div style={{ marginTop: 12, fontSize: 11, letterSpacing: 2, color: att.color, textTransform: "uppercase" }}>Ton profil d'attachement</div>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 300, color: "var(--dark)", margin: "8px 0 0", fontStyle: "italic" }}>{att.label}</h2>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 30, fontWeight: 300, color: "#1A1A1A", margin: "8px 0 0", fontStyle: "italic" }}>{att.label}</h2>
         </div>
         <div style={{ padding: 24 }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC", marginBottom: 16 }}>
@@ -802,23 +802,23 @@ function App() {
     return (
       <div style={{ ...PAGE, paddingBottom: 80 }}>
         {/* Header */}
-        <div style={{ background: "var(--dark)", padding: "52px 24px 28px", position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "#1A1A1A", padding: "52px 24px 28px", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(232,112,90,0.1)" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "var(--coral)", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Ton parcours</div>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 34, fontWeight: 300, color: "#fff", lineHeight: 1.2 }}>Bienvenue<span style={{ color: "var(--coral)", fontStyle: "italic" }}>.</span></h1>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#E8705A", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Ton parcours</div>
+              <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 300, color: "#fff", lineHeight: 1.2 }}>Bienvenue<span style={{ color: "#E8705A", fontStyle: "italic" }}>.</span></h1>
             </div>
-            <button onClick={() => { if(window.confirm("Recommencer depuis le début ?")) { localStorage.clear(); setResults(null); setCompleted(new Set()); setScreen("onboarding"); }}} style={{ background: "rgba(255,255,255,0.1)", border: "none", fontSize: 10, color: "rgba(255,255,255,0.5)", cursor: "pointer", borderRadius: 8, padding: "6px 10px", fontFamily: "var(--font-body)", letterSpacing: 1 }}>RESET</button>
+            <button onClick={() => { if(window.confirm("Recommencer depuis le début ?")) { localStorage.clear(); setResults(null); setCompleted(new Set()); setScreen("onboarding"); }}} style={{ background: "rgba(255,255,255,0.1)", border: "none", fontSize: 10, color: "rgba(255,255,255,0.5)", cursor: "pointer", borderRadius: 8, padding: "6px 10px", fontFamily: "'Lato', sans-serif", letterSpacing: 1 }}>RESET</button>
           </div>
           {/* Progress bar */}
           <div style={{ marginTop: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{completed.size} / {totalExos} exercices</span>
-              <span style={{ fontSize: 20, fontFamily: "var(--font-display)", fontWeight: 400, color: "var(--coral)" }}>{progress}%</span>
+              <span style={{ fontSize: 20, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, color: "#E8705A" }}>{progress}%</span>
             </div>
             <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 99, height: 4, overflow: "hidden" }}>
-              <div style={{ width: `${progress}%`, height: "100%", background: "var(--coral)", borderRadius: 99, transition: "width 0.8s ease" }} />
+              <div style={{ width: `${progress}%`, height: "100%", background: "#E8705A", borderRadius: 99, transition: "width 0.8s ease" }} />
             </div>
           </div>
         </div>
@@ -925,7 +925,7 @@ function App() {
               <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7, margin: 0 }}>{exo.intro}</p>
             </div>
           )}
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: "var(--dark)", lineHeight: 1.6, marginBottom: 24 }}>{curStep?.q}</h3>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.6, marginBottom: 24 }}>{curStep?.q}</h3>
           <StepView step={curStep} ans={curAns} setAns={v => setEAns(p => ({ ...p, [eStep]: v }))} />
         </div>
         <div style={{ flex: 1 }} />
@@ -1199,8 +1199,8 @@ function App() {
           ))}
           {chatLoading && (
             <div style={{ display: "flex" }}>
-              <div style={{ background: "var(--white)", border: "1px solid var(--cream-dark)", borderRadius: "16px 16px 16px 4px", padding: "16px 20px" }}>
-              <div className="dot-pulse"><span/><span/><span/></div>
+              <div style={{ background: "#FFFFFF", border: "1px solid #EDD5CC", borderRadius: "16px 16px 16px 4px", padding: "16px 20px" }}>
+              <div style={{color:"#E8705A",letterSpacing:4,fontSize:20}}>···</div>
             </div>
             </div>
           )}
