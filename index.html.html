@@ -18,18 +18,18 @@
       --mid: #8B7060;
       --light: #F0E0D8;
       --white: #FFFFFF;
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'Lato', sans-serif;
+      --font-display: Georgia, serif;
+      --font-body: Arial, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background: #F5EDE6; font-family: 'Lato', sans-serif; }
+    body { background: #F5EDE6; font-family: Arial, sans-serif; }
     #root { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; }
     input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; border-radius: 99px; background: #EDD5CC; outline: none; cursor: pointer; width: 100%; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #E8705A; cursor: pointer; box-shadow: 0 2px 8px rgba(232,112,90,0.4); }
     input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #E8705A; cursor: pointer; border: none; }
-    button { font-family: 'Lato', sans-serif; transition: all 0.2s ease; }
+    button { font-family: Arial, sans-serif; transition: all 0.2s ease; }
     button:active { transform: scale(0.97); }
-    textarea, input { font-family: 'Lato', sans-serif; }
+    textarea, input { font-family: Arial, sans-serif; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -61,40 +61,40 @@ const DIAG = [
   { id:1, sec:"A", type:"qcm", q:"Il y a combien de temps ?",
     opts:["Moins de 3 mois","3 à 6 mois","6 mois à 1 an","Plus d'un an"] },
   { id:2, sec:"A", type:"scale", q:"Sur cette échelle, où se situe ta douleur aujourd'hui ?", minL:"Je vais bien", maxL:"Douleur intense" },
-  { id:3, sec:"A", type:"qcm", q:"Aujourd'hui, tu penses encore à cette personne…",
+  { id:3, sec:"A", type:"qcm", q:"Aujourd'hui, tu penses encore à cette personne...",
     opts:["Constamment — plusieurs fois par heure","Souvent — plusieurs fois par jour","Parfois — ça va et vient","Rarement — je passe à autre chose"] },
-  { id:4, sec:"A", type:"multi", max:3, q:"Cette relation t'a fait douter de… (jusqu'à 3)",
+  { id:4, sec:"A", type:"multi", max:3, q:"Cette relation t'a fait douter de... (jusqu'à 3)",
     opts:["Ta valeur en tant que partenaire","Ta capacité à bien aimer","Ton jugement et ton intuition","Ta normalité émotionnelle","Rien — c'est l'autre le problème"] },
   { id:5, sec:"A", type:"qcm", q:"As-tu l'impression de revivre quelque chose de déjà vécu ?",
     opts:["Oui clairement — c'est un schéma","Peut-être, j'y pense","Non, c'était vraiment unique","Je ne sais pas encore"] },
-  { id:6, sec:"B", type:"qcm", q:"Quand quelqu'un que tu aimes ne répond pas pendant des heures, tu…",
+  { id:6, sec:"B", type:"qcm", q:"Quand quelqu'un que tu aimes ne répond pas pendant des heures, tu...",
     opts:["Commence à t'inquiéter et rejoues la conversation","T'en fiches — chacun a sa vie","Attends sereinement sans te faire de film","Oscilles entre indifférence et panique"] },
-  { id:7, sec:"B", type:"qcm", q:"Dans une relation, ce qui est le plus dur pour toi c'est…",
+  { id:7, sec:"B", type:"qcm", q:"Dans une relation, ce qui est le plus dur pour toi c'est...",
     opts:["Ne pas être sûr(e) d'être aimé(e) en retour","Quand l'autre veut trop de proximité","Rien de particulier — je m'adapte bien","Alterner entre les deux selon les jours"] },
-  { id:8, sec:"B", type:"scenario", q:"Tu passes une soirée parfaite avec quelqu'un que tu commences à aimer. En rentrant, tu ressens…",
+  { id:8, sec:"B", type:"scenario", q:"Tu passes une soirée parfaite avec quelqu'un que tu commences à aimer. En rentrant, tu ressens...",
     opts:["De l'anxiété — et si ce n'était pas réciproque ?","Un léger recul — tu as besoin de ton espace","De la joie simple — c'était bien, point","De la confusion — trop d'émotions mélangées"] },
-  { id:9, sec:"B", type:"qcm", q:"Face à un conflit avec quelqu'un que tu aimes, ta première réaction est…",
+  { id:9, sec:"B", type:"qcm", q:"Face à un conflit avec quelqu'un que tu aimes, ta première réaction est...",
     opts:["M'accrocher et vouloir régler ça tout de suite","Prendre de la distance et me taire","En parler calmement quand le moment est bon","Exploser, puis me retirer complètement"] },
   { id:10, sec:"B", type:"scale", q:"À quel point fais-tu confiance aux gens naturellement ?", minL:"Pas du tout", maxL:"Très facilement" },
-  { id:11, sec:"B", type:"qcm", q:"Ce qui te fait le plus peur en amour…",
+  { id:11, sec:"B", type:"qcm", q:"Ce qui te fait le plus peur en amour...",
     opts:["Être abandonné(e) ou pas assez aimé(e)","Perdre ma liberté ou être étouffé(e)","Pas grand-chose — l'amour c'est beau","Les deux à la fois — c'est le paradoxe"] },
 ];
 
 const ATTACH = {
   anxieux: {
-    label: "Attachement anxieux", emoji: "🌊", color: "#E8705A", bg: "#FFF0EB",
+    label: "Attachement anxieux", emoji: "[vague]", color: "#E8705A", bg: "#FFF0EB",
     desc: "Tu aimes intensément et tu as peur de perdre. Tu surveilles les signaux de l'autre à la loupe — parfois au détriment de toi-même. Cette sensibilité est aussi l'une de tes plus grandes forces."
   },
   evitant: {
-    label: "Attachement évitant", emoji: "🏔️", color: "#C4574A", bg: "#FDF0EC",
+    label: "Attachement évitant", emoji: "[mont]️", color: "#C4574A", bg: "#FDF0EC",
     desc: "Tu te protèges en gardant de la distance. L'intimité te met mal à l'aise sans que tu saches toujours pourquoi. Ta prochaine étape : apprendre à laisser entrer sans te perdre."
   },
   secure: {
-    label: "Attachement sécure", emoji: "⚓", color: "#D4574A", bg: "#FDF0EC",
+    label: "Attachement sécure", emoji: "[ancre]", color: "#D4574A", bg: "#FDF0EC",
     desc: "Tu as une base stable. La relation difficile que tu traverses ne remet pas en cause ta capacité à aimer. Tu as toutes les ressources — il faut juste du temps."
   },
   desorganise: {
-    label: "Attachement désorganisé", emoji: "🌀", color: "#C4574A", bg: "#FFF0EB",
+    label: "Attachement désorganisé", emoji: "[spirale]", color: "#C4574A", bg: "#FFF0EB",
     desc: "Tu veux l'amour et tu en as peur en même temps. C'est souvent lié à des expériences anciennes. Ce que tu traverses est réel — et avec le bon chemin, ça peut vraiment transformer ta vie."
   },
   saimer: [
@@ -104,7 +104,7 @@ const ATTACH = {
       steps: [
         { type: "coach", text: "Ferme les yeux un instant. Écoute ce que ta voix intérieure te dit en ce moment sur toi-même. Sans la juger — juste l'observer." },
         { type: "textarea", q: "Quels sont les 3 messages les plus récurrents que cette voix te répète sur toi ? ("Tu n'es pas assez...", "Tu aurais dû...", "Tu ne mérites pas...")" },
-        { type: "choice", q: "Cette voix intérieure ressemble le plus à…", opts: ["Un critique sévère qui ne te fait jamais confiance", "Un juge qui comptabilise toutes tes erreurs", "Un protecteur anxieux qui anticipe le pire", "Un perfectionniste qui ne te laisse jamais tranquille"] },
+        { type: "choice", q: "Cette voix intérieure ressemble le plus à...", opts: ["Un critique sévère qui ne te fait jamais confiance", "Un juge qui comptabilise toutes tes erreurs", "Un protecteur anxieux qui anticipe le pire", "Un perfectionniste qui ne te laisse jamais tranquille"] },
         { type: "textarea", q: "Si cette voix était une personne, que lui dirais-tu ? Parle-lui directement." },
         { type: "textarea", q: "Maintenant, imagine une voix qui t'aimerait inconditionnellement. Qu'est-ce qu'elle te dirait sur toi, là, maintenant ?" },
         { type: "coach", text: "Tu ne es pas cette voix. Tu es celui ou celle qui l'entend. Et tu peux choisir à laquelle tu obéis." },
@@ -115,7 +115,7 @@ const ATTACH = {
       intro: "L'amour de soi n'est pas un sentiment — c'est une pratique. Inspiré des travaux de Brené Brown sur la vulnérabilité et la valeur personnelle : on ne trouve pas l'amour de soi, on le construit chaque jour par des actes concrets.",
       steps: [
         { type: "coach", text: "L'amour de soi se voit dans les petites décisions quotidiennes. Pas dans les grandes déclarations." },
-        { type: "choice", q: "Quand tu as un besoin (repos, aide, espace, soutien), tu…", opts: ["L'ignores et continues comme si de rien n'était", "L'exprimes difficilement, avec culpabilité", "Attends que l'autre devine sans demander", "Le reconnais et le poses clairement"] },
+        { type: "choice", q: "Quand tu as un besoin (repos, aide, espace, soutien), tu...", opts: ["L'ignores et continues comme si de rien n'était", "L'exprimes difficilement, avec culpabilité", "Attends que l'autre devine sans demander", "Le reconnais et le poses clairement"] },
         { type: "textarea", q: "Qu'est-ce que tu t'interdis de faire pour toi par peur du regard des autres ou par culpabilité ?" },
         { type: "multicheck", max: 4, q: "Les actes d'amour envers toi que tu vas t'engager à pratiquer :", opts: ["Dire non sans m'excuser", "Me reposer sans me sentir paresseux·se", "Demander de l'aide sans honte", "Me nourrir bien, dormir assez", "M'offrir du temps seul·e sans justification", "Célébrer mes réussites, même petites", "Arrêter de comparer ma vie à celle des autres", "M'habiller pour moi, pas pour les autres", "Poser des limites claires avec ceux qui me vident", "Prendre du plaisir sans le mériter"] },
         { type: "textarea", q: "Quel est l'acte d'amour envers toi-même que tu repousses depuis trop longtemps ? Qu'est-ce qui t'en empêche vraiment ?" },
@@ -129,7 +129,7 @@ const ATTACH = {
         { type: "coach", text: "La joie de vivre ne vient pas de l'extérieur. Elle ne viendra pas d'une relation, d'un succès ou d'une validation. Elle est déjà en toi — enfouie sous les couches de ce que tu as traversé." },
         { type: "textarea", q: "Qu'est-ce qui te faisait ressentir de la joie pure avant — avant cette relation, avant ces épreuves ? Des petites choses, des grandes..." },
         { type: "textarea", q: "En ce moment, qu'est-ce qui, même légèrement, te fait te sentir vivant·e ?" },
-        { type: "choice", q: "Ta relation à la solitude aujourd'hui, c'est…", opts: ["Un vide qui me pèse — j'ai du mal à être seul·e", "Un repos bienvenu — j'apprends à l'apprécier", "Un espace de liberté que je commence à aimer", "Ma fondation — je me retrouve quand je suis seul·e"] },
+        { type: "choice", q: "Ta relation à la solitude aujourd'hui, c'est...", opts: ["Un vide qui me pèse — j'ai du mal à être seul·e", "Un repos bienvenu — j'apprends à l'apprécier", "Un espace de liberté que je commence à aimer", "Ma fondation — je me retrouve quand je suis seul·e"] },
         { type: "textarea", q: "Si tu savais que personne ne te juge, que tu ne risques rien — qu'est-ce que tu ferais pour toi dès demain ?" },
         { type: "coach", text: "Tu n'as pas besoin de quelqu'un pour commencer à vivre pleinement. Tu as juste besoin de toi." },
         { type: "textarea", q: "Écris ta propre définition de la joie. Pas celle des livres ou des réseaux sociaux. La tienne." },
@@ -139,10 +139,10 @@ const ATTACH = {
 };
 
 const PHASES = [
-  { id: "comprendre", emoji: "🌱", title: "Comprendre", color: "#C4574A", bg: "#FDF0EC", sub: "Voir clairement ce qui s'est passé" },
-  { id: "guerir",     emoji: "🌿", title: "Guérir",     color: "#E8705A", bg: "#FFF0EB", sub: "Reprendre sa place et sa force" },
-  { id: "construire", emoji: "🌸", title: "Construire", color: "#D4574A", bg: "#FDF0EC", sub: "Accueillir une vraie relation" },
-  { id: "saimer",     emoji: "✦",  title: "S'aimer",    color: "#1A1A1A", bg: "#F5EDE6", sub: "La fondation de tout le reste" },
+  { id: "comprendre", emoji: "[graine]", title: "Comprendre", color: "#C4574A", bg: "#FDF0EC", sub: "Voir clairement ce qui s'est passé" },
+  { id: "guerir",     emoji: "[plante]", title: "Guérir",     color: "#E8705A", bg: "#FFF0EB", sub: "Reprendre sa place et sa force" },
+  { id: "construire", emoji: "[fleur]", title: "Construire", color: "#D4574A", bg: "#FDF0EC", sub: "Accueillir une vraie relation" },
+  { id: "saimer",     emoji: "*",  title: "S'aimer",    color: "#1A1A1A", bg: "#F5EDE6", sub: "La fondation de tout le reste" },
 ];
 
 const EXOS = {
@@ -178,7 +178,7 @@ const EXOS = {
         { type: "coach", text: "Les valeurs ne sont pas des qualités qu'on admire chez les autres. Ce sont les choses sans lesquelles tu ne peux pas être toi-même." },
         { type: "multicheck", max: 5, q: "Choisis tes 5 valeurs les plus essentielles :", opts: ["Liberté","Sécurité","Authenticité","Loyauté","Croissance","Tendresse","Indépendance","Profondeur","Humour","Respect","Passion","Stabilité","Créativité","Courage","Paix intérieure","Aventure"] },
         { type: "textarea", q: "Dans ta dernière relation, laquelle de ces valeurs était régulièrement bafouée ?" },
-        { type: "choice", q: "En te retournant, tu réalises que tu as accepté cette trahison de tes valeurs parce que…", opts: ["J'avais peur de perdre l'autre","Je pensais que l'amour demandait des compromis","Je ne me sentais pas légitime d'exiger","Je n'avais pas conscience que c'était une valeur pour moi"] },
+        { type: "choice", q: "En te retournant, tu réalises que tu as accepté cette trahison de tes valeurs parce que...", opts: ["J'avais peur de perdre l'autre","Je pensais que l'amour demandait des compromis","Je ne me sentais pas légitime d'exiger","Je n'avais pas conscience que c'était une valeur pour moi"] },
         { type: "textarea", q: "Comment tes valeurs vont-elles guider tes choix dans ta prochaine relation ?" },
       ]
     },
@@ -229,7 +229,7 @@ const EXOS = {
         { type: "textarea", q: "Décris cette version de toi. Comment tu te sens ? Comment tu vis ? Comment tu aimes ?" },
         { type: "textarea", q: "Dans cette vie, qu'est-ce qui est radicalement différent d'aujourd'hui ?" },
         { type: "textarea", q: "Qu'est-ce que cette version future de toi voudrait dire à la version d'aujourd'hui ?" },
-        { type: "choice", q: "Cette vision de toi épanoui·e, elle te semble…", opts: ["Accessible et réelle","Belle mais lointaine","Exactement ce que je veux","Plus proche que je ne le pensais"] },
+        { type: "choice", q: "Cette vision de toi épanoui·e, elle te semble...", opts: ["Accessible et réelle","Belle mais lointaine","Exactement ce que je veux","Plus proche que je ne le pensais"] },
       ]
     },
     {
@@ -240,7 +240,7 @@ const EXOS = {
         { type: "multicheck", max: 4, q: "Les 4 fondations non-négociables pour toi :", opts: ["Confiance totale","Communication vraie","Respect de l'espace","Projets communs","Désir et attraction","Amitié profonde","Valeurs communes","Soutien mutuel","Liberté préservée","Humour partagé","Croissance ensemble","Stabilité émotionnelle"] },
         { type: "textarea", q: "Dans ta prochaine relation, qu'est-ce que tu vas faire différemment dès le début ?" },
         { type: "textarea", q: "Quelle est la chose que tu ne feras plus jamais au nom de l'amour ?" },
-        { type: "choice", q: "Face à quelqu'un qui t'attire mais qui ne respecte pas une de tes fondations, tu feras…", opts: ["Je partirai — j'ai appris","Je lui laisserai une chance d'évoluer","Je communiquerai clairement ma limite","Je ne sais pas encore, mais je travaille là-dessus"] },
+        { type: "choice", q: "Face à quelqu'un qui t'attire mais qui ne respecte pas une de tes fondations, tu feras...", opts: ["Je partirai — j'ai appris","Je lui laisserai une chance d'évoluer","Je communiquerai clairement ma limite","Je ne sais pas encore, mais je travaille là-dessus"] },
       ]
     },
     {
@@ -614,7 +614,7 @@ function App() {
         })
       });
       const data = await res.json();
-      const text = data.text || "Je t'entends. Continue…";
+      const text = data.text || "Je t'entends. Continue...";
       setMsgs([...next, { role: "assistant", content: text }]);
     } catch {
       setMsgs([...next, { role: "assistant", content: "Une erreur s'est produite. Réessaie." }]);
@@ -670,8 +670,8 @@ function App() {
         <div style={{ background: "#1A1A1A", padding: "64px 32px 48px", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(232,112,90,0.12)" }} />
           <div style={{ position: "absolute", bottom: -40, left: -40, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,112,90,0.08)" }} />
-          <div  style={{ fontSize: 11, letterSpacing: 4, color: "#E8705A", textTransform: "uppercase", marginBottom: 20, fontFamily: "'Lato', sans-serif", fontWeight: 700 }}>Marlène Gasmi · Coach certifiée</div>
-          <h1  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 48, fontWeight: 300, color: "#fff", lineHeight: 1.15, margin: "0 0 8px" }}>
+          <div  style={{ fontSize: 11, letterSpacing: 4, color: "#E8705A", textTransform: "uppercase", marginBottom: 20, fontFamily: "Arial, sans-serif", fontWeight: 700 }}>Marlène Gasmi · Coach certifiée</div>
+          <h1  style={{ fontFamily: "Georgia, serif", fontSize: 48, fontWeight: 300, color: "#fff", lineHeight: 1.15, margin: "0 0 8px" }}>
             Comprendre.<br />
             <span style={{ fontStyle: "italic", color: "#E8705A" }}>Guérir.</span><br />
             Construire.
@@ -684,14 +684,14 @@ function App() {
         {/* Features */}
         <div style={{ flex: 1, padding: "32px 24px" }}>
           {[
-            { icon: "◇", title: "Diagnostic précis", desc: "Relation vécue + style d'attachement identifié" },
-            { icon: "◈", title: "Vrais exercices de coaching", desc: "Croyances, valeurs, forces, lettres thérapeutiques" },
-            { icon: "◉", title: "Coach IA personnel", desc: "Disponible à tout moment, bienveillant et direct" },
+            { icon: "◆", title: "Diagnostic précis", desc: "Relation vécue + style d'attachement identifié" },
+            { icon: "◆", title: "Vrais exercices de coaching", desc: "Croyances, valeurs, forces, lettres thérapeutiques" },
+            { icon: "◆", title: "Coach IA personnel", desc: "Disponible à tout moment, bienveillant et direct" },
           ].map((f, i) => (
             <div key={i} className={`fade-up-${i+2}`} style={{ display: "flex", gap: 16, marginBottom: 24, alignItems: "flex-start" }}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: "#FFF0EB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#E8705A", fontSize: 16 }}>{f.icon}</div>
               <div>
-                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 18, fontWeight: 500, color: "#1A1A1A", marginBottom: 4 }}>{f.title}</div>
+                <div style={{ fontFamily: "Georgia, serif", fontSize: 18, fontWeight: 500, color: "#1A1A1A", marginBottom: 4 }}>{f.title}</div>
                 <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6, fontWeight: 300 }}>{f.desc}</div>
               </div>
             </div>
@@ -701,7 +701,7 @@ function App() {
         {/* CTA */}
         <div style={{ padding: "0 24px 52px" }}>
           <button onClick={() => setScreen("diagnostic")}
-            style={{ width: "100%", padding: "18px", borderRadius: 14, fontSize: 14, fontFamily: "'Lato', sans-serif", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", border: "none", background: "#E8705A", color: "#fff", boxShadow: "0 8px 24px rgba(232,112,90,0.35)" }}>
+            style={{ width: "100%", padding: "18px", borderRadius: 14, fontSize: 14, fontFamily: "Arial, sans-serif", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", border: "none", background: "#E8705A", color: "#fff", boxShadow: "0 8px 24px rgba(232,112,90,0.35)" }}>
             Commencer mon diagnostic
           </button>
           <p style={{ textAlign: "center", fontSize: 12, color: "#8B7060", marginTop: 12, fontWeight: 300 }}>Confidentiel · Bienveillant · Transformateur</p>
@@ -719,7 +719,7 @@ function App() {
           <button
             onClick={() => dStep > 0 ? setDStep(s => s - 1) : setScreen("onboarding")}
             style={BTN_GHOST}
-          >← Retour</button>
+          >< Retour</button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <div style={{ flex: 1, background: "#EDD5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
@@ -730,7 +730,7 @@ function App() {
 
           <div style={{ display: "inline-block", padding: "5px 14px", borderRadius: 99, background: currQ.sec === "A" ? "#FDF0EC" : "#FFF0EB", marginBottom: 16 }}>
             <span style={{ fontSize: 11, color: currQ.sec === "A" ? "#C4574A" : "#E8705A", letterSpacing: 1 }}>
-              {currQ.sec === "A" ? "🌱 La relation passée" : "🧠 Style d'attachement"}
+              {currQ.sec === "A" ? "[graine] La relation passée" : "[cerveau] Style d'attachement"}
             </span>
           </div>
 
@@ -738,7 +738,7 @@ function App() {
             <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Scénario</div>
           )}
 
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.55, marginBottom: 28 }}>{currQ.q}</h2>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.55, marginBottom: 28 }}>{currQ.q}</h2>
 
           {(currQ.type === "qcm" || currQ.type === "scenario") && (
             <ChoiceList opts={currQ.opts} ans={dAns[currQ.id]} onPick={setDA} />
@@ -757,7 +757,7 @@ function App() {
             onClick={dNext} disabled={!dCanNext()}
             style={{ ...BTN_PRIMARY, background: dCanNext() ? "#1A1A1A" : "#EDD5CC", color: dCanNext() ? "#F5EDE6" : "#A09090", cursor: dCanNext() ? "pointer" : "default" }}
           >
-            {dStep < DIAG.length - 1 ? "Question suivante →" : "Voir mes résultats →"}
+            {dStep < DIAG.length - 1 ? "Question suivante >" : "Voir mes résultats >"}
           </button>
         </div>
       </div>
@@ -774,7 +774,7 @@ function App() {
         <div style={{ background: att.bg, padding: "52px 24px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 52 }}>{att.emoji}</div>
           <div style={{ marginTop: 12, fontSize: 11, letterSpacing: 2, color: att.color, textTransform: "uppercase" }}>Ton profil d'attachement</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 30, fontWeight: 300, color: "#1A1A1A", margin: "8px 0 0", fontStyle: "italic" }}>{att.label}</h2>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 30, fontWeight: 300, color: "#1A1A1A", margin: "8px 0 0", fontStyle: "italic" }}>{att.label}</h2>
         </div>
         <div style={{ padding: 24 }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC", marginBottom: 16 }}>
@@ -790,7 +790,7 @@ function App() {
               </div>
             </div>
           </div>
-          <button onClick={() => setScreen("home")} style={BTN_PRIMARY}>Commencer mon parcours →</button>
+          <button onClick={() => setScreen("home")} style={BTN_PRIMARY}>Commencer mon parcours ></button>
         </div>
       </div>
     );
@@ -807,15 +807,15 @@ function App() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: 10, letterSpacing: 3, color: "#E8705A", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Ton parcours</div>
-              <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 300, color: "#fff", lineHeight: 1.2 }}>Bienvenue<span style={{ color: "#E8705A", fontStyle: "italic" }}>.</span></h1>
+              <h1 style={{ fontFamily: "Georgia, serif", fontSize: 34, fontWeight: 300, color: "#fff", lineHeight: 1.2 }}>Bienvenue<span style={{ color: "#E8705A", fontStyle: "italic" }}>.</span></h1>
             </div>
-            <button onClick={() => { if(window.confirm("Recommencer depuis le début ?")) { localStorage.clear(); setResults(null); setCompleted(new Set()); setScreen("onboarding"); }}} style={{ background: "rgba(255,255,255,0.1)", border: "none", fontSize: 10, color: "rgba(255,255,255,0.5)", cursor: "pointer", borderRadius: 8, padding: "6px 10px", fontFamily: "'Lato', sans-serif", letterSpacing: 1 }}>RESET</button>
+            <button onClick={() => { if(window.confirm("Recommencer depuis le début ?")) { localStorage.clear(); setResults(null); setCompleted(new Set()); setScreen("onboarding"); }}} style={{ background: "rgba(255,255,255,0.1)", border: "none", fontSize: 10, color: "rgba(255,255,255,0.5)", cursor: "pointer", borderRadius: 8, padding: "6px 10px", fontFamily: "Arial, sans-serif", letterSpacing: 1 }}>RESET</button>
           </div>
           {/* Progress bar */}
           <div style={{ marginTop: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{completed.size} / {totalExos} exercices</span>
-              <span style={{ fontSize: 20, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, color: "#E8705A" }}>{progress}%</span>
+              <span style={{ fontSize: 20, fontFamily: "Georgia, serif", fontWeight: 400, color: "#E8705A" }}>{progress}%</span>
             </div>
             <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 99, height: 4, overflow: "hidden" }}>
               <div style={{ width: `${progress}%`, height: "100%", background: "#E8705A", borderRadius: 99, transition: "width 0.8s ease" }} />
@@ -833,7 +833,7 @@ function App() {
                 style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 12, border: isReco ? `1.5px solid ${ph.color}` : "1px solid #EDD5CC", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: ph.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{ph.emoji}</div>
                 <div style={{ flex: 1 }}>
-                  {isReco && <div style={{ fontSize: 10, color: ph.color, letterSpacing: 1, marginBottom: 3 }}>★ RECOMMANDÉ POUR TOI</div>}
+                  {isReco && <div style={{ fontSize: 10, color: ph.color, letterSpacing: 1, marginBottom: 3 }}>* RECOMMANDÉ POUR TOI</div>}
                   <div style={{ fontSize: 11, color: ph.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>Étape {i + 1}</div>
                   <div style={{ fontSize: 15, color: "#1A1A1A" }}>{ph.title}</div>
                   <div style={{ fontSize: 12, color: "#8B7060", marginTop: 2 }}>{done}/{EXOS[ph.id].length} exercices</div>
@@ -853,12 +853,12 @@ function App() {
 
         {completed.size === totalExos && (
           <div style={{ margin: "16px 24px 0", background: "linear-gradient(135deg, #1A1A1A 0%, #3A1F14 100%)", borderRadius: 16, padding: "24px", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🌸</div>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>[fleur]</div>
             <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Parcours complet</div>
             <div style={{ fontSize: 18, color: "#F5EDE6", fontWeight: 400, marginBottom: 8, lineHeight: 1.4 }}>Tu as tout traversé.</div>
             <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7, marginBottom: 20 }}>Ton bilan final et la lettre de ton coach t'attendent.</div>
             <button onClick={generateFinalBilan} style={{ background: "#D4574A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
-              Voir mon bilan final →
+              Voir mon bilan final >
             </button>
           </div>
         )}
@@ -873,7 +873,7 @@ function App() {
     return (
       <div style={{ ...PAGE, paddingBottom: 60 }}>
         <div style={{ background: activePhase.bg, padding: "48px 24px 32px" }}>
-          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: activePhase.color }}>← Retour</button>
+          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: activePhase.color }}>< Retour</button>
           <div style={{ fontSize: 36 }}>{activePhase.emoji}</div>
           <h2 style={{ fontSize: 26, fontWeight: 400, color: "#1A1A1A", margin: "12px 0 8px" }}>{activePhase.title}</h2>
           <p style={{ fontSize: 14, color: "#8B7060", margin: 0 }}>{activePhase.sub}</p>
@@ -890,7 +890,7 @@ function App() {
                   </div>
                   <div>
                     <div style={{ fontSize: 15, color: "#1A1A1A", marginBottom: 4 }}>{ex.title}</div>
-                    <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6 }}>{ex.intro.substring(0, 75)}…</div>
+                    <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6 }}>{ex.intro.substring(0, 75)}...</div>
                     <div style={{ fontSize: 12, color: activePhase.color, marginTop: 6 }}>{ex.steps.length} étapes</div>
                   </div>
                 </div>
@@ -912,7 +912,7 @@ function App() {
       <div style={{ ...PAGE, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div style={{ padding: "48px 24px 0" }}>
           <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>
-            ← {exo.title}
+            < {exo.title}
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <div style={{ flex: 1, background: "#EDD5CC", borderRadius: 99, height: 4, overflow: "hidden" }}>
@@ -925,7 +925,7 @@ function App() {
               <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.7, margin: 0 }}>{exo.intro}</p>
             </div>
           )}
-          <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.6, marginBottom: 24 }}>{curStep?.q}</h3>
+          <h3 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 400, color: "#1A1A1A", lineHeight: 1.6, marginBottom: 24 }}>{curStep?.q}</h3>
           <StepView step={curStep} ans={curAns} setAns={v => setEAns(p => ({ ...p, [eStep]: v }))} />
         </div>
         <div style={{ flex: 1 }} />
@@ -934,7 +934,7 @@ function App() {
             onClick={eNext} disabled={!eCanNext()}
             style={{ ...BTN_PRIMARY, background: eCanNext() ? phColor : "#EDD5CC", color: eCanNext() ? "#fff" : "#A09090", cursor: eCanNext() ? "pointer" : "default" }}
           >
-            {curStep && curStep.type === "coach" ? "J'ai lu →" : eStep < exo.steps.length - 1 ? "Étape suivante →" : "Terminer l'exercice ✓"}
+            {curStep && curStep.type === "coach" ? "J'ai lu >" : eStep < exo.steps.length - 1 ? "Étape suivante >" : "Terminer l'exercice ✓"}
           </button>
         </div>
       </div>
@@ -950,7 +950,7 @@ function App() {
     return (
       <div style={{ ...PAGE, paddingBottom: 60 }}>
         <div style={{ padding: "48px 24px 24px" }}>
-          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>← Retour</button>
+          <button onClick={() => { setExo(null); setScreen("phase-" + pId); }} style={BTN_GHOST}>< Retour</button>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: ph?.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{ph?.emoji}</div>
             <div>
@@ -962,9 +962,9 @@ function App() {
 
         {analysisLoading && (
           <div style={{ margin: "0 24px", background: "#fff", borderRadius: 16, padding: "32px 24px", border: "1px solid #EDD5CC", textAlign: "center" }}>
-            <div style={{ fontSize: 28, marginBottom: 16 }}>🌿</div>
+            <div style={{ fontSize: 28, marginBottom: 16 }}>[plante]</div>
             <div style={{ fontSize: 14, color: "#8B7060", lineHeight: 1.8 }}>
-              Ton coach analyse tes réponses…
+              Ton coach analyse tes réponses...
             </div>
             <div style={{ marginTop: 16, display: "flex", justifyContent: "center", gap: 6 }}>
               {[0,1,2].map(i => (
@@ -987,7 +987,7 @@ function App() {
             {/* Force */}
             <div style={{ background: ph?.bg || "#FDF0EC", borderRadius: 16, padding: "20px 24px", border: `1px solid ${phColor}22` }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>💪</div>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>[force]</div>
                 <div>
                   <div style={{ fontSize: 11, color: phColor, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta force visible</div>
                   <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>{analysis.force}</p>
@@ -998,7 +998,7 @@ function App() {
             {/* Conseil */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>🎯</div>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>[cible]</div>
                 <div>
                   <div style={{ fontSize: 11, color: "#8B7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ton conseil pour cette semaine</div>
                   <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>{analysis.conseil}</p>
@@ -1034,11 +1034,11 @@ function App() {
     return (
       <div style={{ ...PAGE, paddingBottom: 80 }}>
         <div style={{ background: "#1A1A1A", padding: "52px 24px 40px", textAlign: "center" }}>
-          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: "#8B7060", marginBottom: 28 }}>← Retour</button>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
+          <button onClick={() => setScreen("home")} style={{ ...BTN_GHOST, color: "#8B7060", marginBottom: 28 }}>< Retour</button>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>[fleur]</div>
           <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>Bilan final</div>
           {finalLoading ? (
-            <div style={{ fontSize: 16, color: "#F5EDE6", lineHeight: 1.6 }}>Ton coach prépare ton bilan…</div>
+            <div style={{ fontSize: 16, color: "#F5EDE6", lineHeight: 1.6 }}>Ton coach prépare ton bilan...</div>
           ) : finalBilan ? (
             <h2 style={{ fontSize: 26, fontWeight: 400, color: "#F5EDE6", margin: 0, lineHeight: 1.3 }}>{finalBilan.titre}</h2>
           ) : null}
@@ -1051,7 +1051,7 @@ function App() {
                 <div key={i} style={{ width: 10, height: 10, borderRadius: 99, background: "#D4574A", opacity: 0.4 }} />
               ))}
             </div>
-            <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.8 }}>Quelques instants…<br />Ton coach lit tout ce que tu as traversé.</p>
+            <p style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.8 }}>Quelques instants...<br />Ton coach lit tout ce que tu as traversé.</p>
           </div>
         )}
 
@@ -1068,7 +1068,7 @@ function App() {
             {/* Transformation */}
             <div style={{ background: "#FDF0EC", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>🦋</div>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>[papillon]</div>
                 <div>
                   <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Ta transformation</div>
                   <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.85, margin: 0 }}>{finalBilan.transformation}</p>
@@ -1078,13 +1078,13 @@ function App() {
 
             {/* Signes que tu es prêt(e) */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", border: "1px solid #EDD5CC" }}>
-              <div style={{ fontSize: 11, color: "#C4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>🌱 Tu es prêt·e quand…</div>
+              <div style={{ fontSize: 11, color: "#C4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>[graine] Tu es prêt·e quand...</div>
               <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.9, margin: 0 }}>{finalBilan.prete}</p>
             </div>
 
             {/* Lettre du coach */}
             <div style={{ background: "#FFF0EB", borderRadius: 16, padding: "24px", border: "1px solid #EDD5CC" }}>
-              <div style={{ fontSize: 11, color: "#E8705A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>💌 La lettre de ton coach</div>
+              <div style={{ fontSize: 11, color: "#E8705A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>[lettre] La lettre de ton coach</div>
               <p style={{ fontSize: 15, color: "#1A1A1A", lineHeight: 2, margin: 0, fontStyle: "italic" }}>{finalBilan.lettre}</p>
             </div>
 
@@ -1103,7 +1103,7 @@ function App() {
             {/* Profil idéal */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "22px 24px", border: "1.5px solid #D4574A" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>💛</div>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>[coeur]</div>
                 <div>
                   <div style={{ fontSize: 11, color: "#D4574A", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Le profil fait pour toi</div>
                   <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.9, margin: 0 }}>{finalBilan.profil_ideal}</p>
@@ -1156,10 +1156,10 @@ function App() {
 
             {/* CTA final */}
             <div style={{ background: "#1A1A1A", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🌸</div>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>[fleur]</div>
               <p style={{ fontSize: 15, color: "#F5EDE6", lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{finalBilan.affirmation}"</p>
               <button onClick={() => setScreen("coach")} style={{ background: "#D4574A", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontSize: 14, fontFamily: "Georgia, serif", cursor: "pointer" }}>
-                Parler au coach IA 💬
+                Parler au coach IA [chat]
               </button>
             </div>
 
@@ -1175,9 +1175,9 @@ function App() {
     return (
       <div style={{ ...PAGE, display: "flex", flexDirection: "column", height: "100vh" }}>
         <div style={{ padding: "48px 24px 16px", borderBottom: "1px solid #EDD5CC", background: "#fff", flexShrink: 0 }}>
-          <button onClick={() => setScreen("home")} style={BTN_GHOST}>← Retour</button>
+          <button onClick={() => setScreen("home")} style={BTN_GHOST}>< Retour</button>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 99, background: "#FDF0EC", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
+            <div style={{ width: 40, height: 40, borderRadius: 99, background: "#FDF0EC", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>[plante]</div>
             <div>
               <div style={{ fontSize: 15, color: "#1A1A1A" }}>Coach</div>
               <div style={{ fontSize: 12, color: "#8B7060" }}>IA · disponible maintenant</div>
@@ -1213,7 +1213,7 @@ function App() {
               value={chatIn}
               onChange={e => setChatIn(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
-              placeholder="Écris ce que tu ressens…"
+              placeholder="Écris ce que tu ressens..."
               rows={2}
               style={{ flex: 1, background: "#F5EDE7", border: "1px solid #EDD5CC", borderRadius: 12, padding: "12px 16px", fontSize: 14, fontFamily: "Georgia, serif", resize: "none", outline: "none", color: "#1A1A1A", lineHeight: 1.6 }}
             />
